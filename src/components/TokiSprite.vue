@@ -1,10 +1,11 @@
 <template>
-  <div class="display">
+  <div ref="displayRef" class="display">
     <div class="corner tl"></div><div class="corner tr"></div>
     <div class="corner bl"></div><div class="corner br"></div>
 
-    <div class="sprite-wrap">
+    <div ref="wrapRef" class="sprite-wrap">
       <img
+        ref="imgRef"
         class="sprite vis"
         :class="{ bk: bouncing }"
         :src="spriteSrc"
@@ -26,11 +27,14 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { usePetStore } from '../stores/pet'
 
 const store    = usePetStore()
 const bouncing = ref(false)
+const displayRef = ref(null)
+const wrapRef    = ref(null)
+const imgRef     = ref(null)
 
 // 允許的圖檔，避免錯字導致 404
 const SPRITE_NAMES = new Set([
@@ -56,6 +60,7 @@ watch(() => store.currentSprite, (next, prev) => {
 
 function onLoad(e) {
   e.target.style.opacity = '1'
+  logSpriteLayout('onLoad')
 }
 
 function onError(e) {
@@ -66,5 +71,48 @@ function onError(e) {
 function onSpriteClick() {
   store.recordClick()
   store.doAction('pat')
+}
+
+function logSpriteLayout(source) {
+  if (!import.meta.env.DEV) return
+  const display = displayRef.value
+  const wrap = wrapRef.value
+  const img = imgRef.value
+  if (!display || !wrap || !img) return
+  const ds = getComputedStyle(display)
+  const ws = getComputedStyle(wrap)
+  const is = getComputedStyle(img)
+  const dRect = display.getBoundingClientRect()
+  const wRect = wrap.getBoundingClientRect()
+  const iRect = img.getBoundingClientRect()
+  console.debug('[sprite-layout]', source, {
+    display: { w: dRect.width, h: dRect.height, overflow: ds.overflow },
+    wrap: { w: wRect.width, h: wRect.height, overflow: ws.overflow },
+    img: {
+      w: iRect.width,
+      h: iRect.height,
+      display: is.display,
+      visibility: is.visibility,
+      opacity: is.opacity,
+      position: is.position,
+      objectFit: is.objectFit,
+      maxHeight: is.maxHeight,
+      maxWidth: is.maxWidth
+    }
+  })
+}
+
+onMounted(async () => {
+  await nextTick()
+  logSpriteLayout('mounted')
+  window.addEventListener('resize', onResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onResize)
+})
+
+function onResize() {
+  logSpriteLayout('resize')
 }
 </script>
