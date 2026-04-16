@@ -64,8 +64,9 @@ function onLoad(e) {
 }
 
 function onError(e) {
-  // 找不到圖就靜默失敗，不影響 UI
+  // 圖片載入失敗時顯示佔位，方便 debug
   console.warn('Sprite not found:', e.target.src)
+  e.target.style.opacity = '0.2'  // 讓圖片區域可見（灰色佔位）
 }
 
 function onSpriteClick() {

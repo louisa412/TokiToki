@@ -63,7 +63,7 @@ body::before {
 
 .sprite-wrap {
   flex:1 1 0;
-  min-height:0;
+  min-height:120px;  /* 防止塌陷：給一個最小高度 */
   width:100%;
   display:flex;
   align-items:center;
@@ -75,10 +75,9 @@ body::before {
   width:auto;
   height:100%;
   max-width:100%;
-  max-height:min(42vw,190px); 
-  min-height:100px;
+  max-height:min(42vw,190px); min-height:100px;
   object-fit:contain; image-rendering:pixelated; image-rendering:crisp-edges;
-  animation:fl 3s ease-in-out infinite; opacity:0; transition:opacity .15s;
+  animation:fl 3s ease-in-out infinite; opacity:1; transition:opacity .15s; /* 預設 opacity:1，不再等 onLoad */
 }
 .sprite.vis { opacity:1; }
 .sprite.bk  { animation:bk .25s ease, fl 3s ease-in-out .25s infinite; }
