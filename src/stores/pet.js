@@ -123,6 +123,7 @@ export const usePetStore = defineStore('pet', {
     sleeping: null,    // null | 'nap' | 'bed'
     sleepEnd: null,
     sleepStart: null,
+    _sleepNow: 0,      // 每秒更新，讓 sleepRemaining getter 可以重算
 
     // Notification dedup
     _notifSent: {}
@@ -138,7 +139,7 @@ export const usePetStore = defineStore('pet', {
     },
     isDisturbed: (state) => nowMs() < state.disturbedUntil,
     isSleeping:  (state) => !!state.sleeping,
-    sleepRemaining: (state) => state.sleepEnd ? Math.max(0, state.sleepEnd - nowMs()) : 0
+    sleepRemaining: (state) => state.sleepEnd ? Math.max(0, state.sleepEnd - state._sleepNow) : 0
   },
 
   actions: {
@@ -356,6 +357,7 @@ export const usePetStore = defineStore('pet', {
       this.sleeping   = type
       this.sleepStart = nowMs()
       this.sleepEnd   = nowMs() + (type === 'nap' ? NAP_MS : BED_MS)
+      this._sleepNow  = nowMs()
       this.setSprite('sleeping')
       this.setMsg(type === 'nap' ? '...zz。叫我再叫。' : '...晚安。')
       this.save()
@@ -398,7 +400,7 @@ export const usePetStore = defineStore('pet', {
 
     tickSleep() {
       if (!this.sleeping) return
-      this.setSprite('sleeping')
+      this._sleepNow = nowMs()   // 更新響應式時間戳，觸發 sleepRemaining 重算
       const rem = this.sleepRemaining
       this.setMsg(this.sleeping === 'nap'
         ? `...zz  剩 ${_fmtTime(rem)}`
