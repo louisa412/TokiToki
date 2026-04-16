@@ -42,9 +42,11 @@ const SPRITE_NAMES = new Set([
   'praised', 'disturbed', 'sleepy', 'sad'
 ])
 
-// Vite：public 資源需加上 BASE_URL，避免部署在子路徑時 /images 404
+// 睡眠中永遠顯示 sleeping，不受 currentSprite 被其他邏輯覆蓋影響
 const spriteSrc = computed(() => {
-  const name = SPRITE_NAMES.has(store.currentSprite) ? store.currentSprite : 'energetic'
+  const name = store.isSleeping
+    ? 'sleeping'
+    : (SPRITE_NAMES.has(store.currentSprite) ? store.currentSprite : 'energetic')
   return `${import.meta.env.BASE_URL}images/${name}.png`
 })
 

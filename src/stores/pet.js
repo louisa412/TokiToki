@@ -398,7 +398,7 @@ export const usePetStore = defineStore('pet', {
 
     tickSleep() {
       if (!this.sleeping) return
-      this.setSprite('sleepy')
+      this.setSprite('sleeping')
       const rem = this.sleepRemaining
       this.setMsg(this.sleeping === 'nap'
         ? `...zz  剩 ${_fmtTime(rem)}`
