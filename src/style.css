@@ -75,7 +75,8 @@ body::before {
   width:auto;
   height:100%;
   max-width:100%;
-  max-height:min(42vw,190px); min-height:100px;
+  max-height:min(42vw,190px); 
+  min-height:100px;
   object-fit:contain; image-rendering:pixelated; image-rendering:crisp-edges;
   animation:fl 3s ease-in-out infinite; opacity:0; transition:opacity .15s;
 }
@@ -219,7 +220,6 @@ body::before {
   padding:8px 12px; cursor:pointer; border-radius:2px; min-height:38px;
 }
 .modal-close:active { border-color:var(--red); color:var(--red); }
-.game-area { /* inner content area */ }
 
 /* ── Game components ───────────────────────────────────── */
 .gp {
