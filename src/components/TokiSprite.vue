@@ -32,10 +32,16 @@ import { usePetStore } from '../stores/pet'
 const store    = usePetStore()
 const bouncing = ref(false)
 
-// 睡覺中用 sleeping.png，其他用對應名稱
+// 允許的圖檔，避免錯字導致 404
+const SPRITE_NAMES = new Set([
+  'sleeping', 'hungry', 'happy', 'patted', 'energetic',
+  'praised', 'disturbed', 'sleepy', 'sad'
+])
+
+// Vite：public 資源需加上 BASE_URL，避免部署在子路徑時 /images 404
 const spriteSrc = computed(() => {
-  const name = store.currentSprite
-  return `/images/${name}.png`
+  const name = SPRITE_NAMES.has(store.currentSprite) ? store.currentSprite : 'energetic'
+  return `${import.meta.env.BASE_URL}images/${name}.png`
 })
 
 // Bounce on sprite change
