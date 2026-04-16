@@ -5,11 +5,12 @@
 
     <div class="sprite-wrap">
       <img
-        class="sprite"
-        :class="{ vis: loaded, bk: bouncing }"
+        class="sprite vis"
+        :class="{ bk: bouncing }"
         :src="spriteSrc"
         alt="Toki"
         @load="onLoad"
+        @error="onError"
         @click="onSpriteClick"
       />
       <!-- Night overlay -->
@@ -19,7 +20,7 @@
     </div>
 
     <div class="status-box">
-      <span id="msgText" style="margin-left:10px">{{ store.lastMsg }}</span>
+      <span style="margin-left:10px">{{ store.lastMsg }}</span>
     </div>
   </div>
 </template>
@@ -28,27 +29,32 @@
 import { ref, computed, watch } from 'vue'
 import { usePetStore } from '../stores/pet'
 
-const store = usePetStore()
-
-const loaded   = ref(false)
+const store    = usePetStore()
 const bouncing = ref(false)
-const prevSprite = ref(store.currentSprite)
 
-const spriteSrc = computed(() => `/images/${store.currentSprite}.png`)
-
-// When sprite changes: fade out → swap → fade in + bounce
-watch(() => store.currentSprite, (next, prev) => {
-  if (next === prev) return
-  loaded.value = false
-  bouncing.value = false
-  prevSprite.value = prev
+// 睡覺中用 sleeping.png，其他用對應名稱
+const spriteSrc = computed(() => {
+  const name = store.currentSprite
+  return `/images/${name}.png`
 })
 
-function onLoad() {
-  loaded.value = true
-  // Brief bounce animation
-  bouncing.value = true
-  setTimeout(() => { bouncing.value = false }, 280)
+// Bounce on sprite change
+watch(() => store.currentSprite, (next, prev) => {
+  if (next === prev) return
+  bouncing.value = false
+  setTimeout(() => {
+    bouncing.value = true
+    setTimeout(() => { bouncing.value = false }, 280)
+  }, 10)
+})
+
+function onLoad(e) {
+  e.target.style.opacity = '1'
+}
+
+function onError(e) {
+  // 找不到圖就靜默失敗，不影響 UI
+  console.warn('Sprite not found:', e.target.src)
 }
 
 function onSpriteClick() {

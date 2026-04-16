@@ -36,11 +36,56 @@ export const NAP_MS = 10 * 60 * 1000
 export const BED_MS = 8  * 60 * 60 * 1000
 
 const IDLE_MSGS = {
-  hungry:    ['...餓了。', '快點。', '你想讓我餓死嗎。'],
-  sleepy:    ['...困了。', '讓我睡。', '眼睛睜不開...'],
-  sad:       ['...無聊。', '...隨便。', '走開。'],
-  energetic: ['哼。今天狀態不差。', '...有什麼事嗎。', '就這樣站著看嗎。']
+  hungry: [
+    '我餓了。很明顯吧。',
+    '你不會沒發現。還是你裝的。',
+    '我現在沒什麼耐心。',
+    '你要幫就快一點。不要拖。',
+    '我不想等太久。',
+    '再晚一點我可能會更不爽。',
+    '快點。',
+    '你想讓我餓死嗎。'
+  ],
+  sleepy: [
+    '我有點累。不是因為你。只是剛好。',
+    '現在聲音有點遠。',
+    '安靜一點。',
+    '我可能會睡著。',
+    '...困了。讓我睡。',
+    '眼睛睜不開...',
+    '反正我會先睡。'
+  ],
+  sad: [
+    '你剛剛去哪了。',
+    '只是有點久。久到我開始覺得你不會來。',
+    '還好你最後還是出現了。',
+    '我沒有在等你。只是剛好沒別的事。',
+    '...算了，你來就好。',
+    '...無聊。...隨便。走開。'
+  ],
+  energetic: [
+    '你來了喔。還算準時。',
+    '我還以為你今天不會出現。',
+    '我沒在等你，只是剛好你來了。',
+    '時間過得很慢，你知道嗎。',
+    '你不在的時候更慢。',
+    '我本來沒打算說話的。但你來了就算了。',
+    '你看起來沒什麼變。還是一樣。',
+    '我剛剛在想事情。現在不想了。',
+    '哼。今天狀態不差。',
+    '...有什麼事嗎。',
+    '就這樣站著看嗎。'
+  ]
 }
+
+// 深夜專屬台詞（nightMode 時 idleUpdate 會混入）
+const NIGHT_MSGS = [
+  '這時間你還醒著。也太誇張。',
+  '我也是。所以才在這。',
+  '現在比較安靜。你不要突然走。',
+  '深夜的橫濱很安靜。你不一樣。',
+  '這個時間點，有點特別。'
+]
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -177,7 +222,12 @@ export const usePetStore = defineStore('pet', {
       if (this.reacting || this.inGame || this.sleeping) return
       const sp = this._getIdleSprite()
       this.setSprite(sp)
-      this.setMsg(rnd(IDLE_MSGS[sp]))
+      // 深夜有機率出現專屬台詞
+      if (this.nightMode && Math.random() < 0.4) {
+        this.setMsg(rnd(NIGHT_MSGS))
+      } else {
+        this.setMsg(rnd(IDLE_MSGS[sp]))
+      }
     },
 
     _getIdleSprite() {
@@ -306,7 +356,7 @@ export const usePetStore = defineStore('pet', {
       this.sleeping   = type
       this.sleepStart = nowMs()
       this.sleepEnd   = nowMs() + (type === 'nap' ? NAP_MS : BED_MS)
-      this.setSprite('sleepy')
+      this.setSprite('sleeping')
       this.setMsg(type === 'nap' ? '...zz。叫我再叫。' : '...晚安。')
       this.save()
     },
