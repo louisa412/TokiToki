@@ -112,7 +112,14 @@ onMounted(() => {
   const save = () => store.save()
   window.addEventListener('beforeunload', save)
   window.addEventListener('pagehide', save)
-  document.addEventListener('visibilitychange', () => { if (document.hidden) store.save() })
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      store.save()
+      store.scheduleBackgroundNotifications()   // 進背景：算好時間點交給 iOS
+    } else {
+      store.cancelBackgroundNotifications()     // 回前景：取消排程，JS 自己接手
+    }
+  })
 })
 
 onUnmounted(() => {

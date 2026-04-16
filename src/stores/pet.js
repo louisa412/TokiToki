@@ -408,11 +408,64 @@ export const usePetStore = defineStore('pet', {
 
     // ── Notifications (JS→Swift bridge) ───────────────────────────────────
 
+    // 前景：只有數值剛剛才跌破門檻時發一次（避免每 8 秒轟炸）
     checkNotifications() {
       if (this.sleeping) return
-      if (this.sat < 20) this._sendNotif('hungry', 'Toki 餓了 🍜', '他已經快餓壞了，快去餵他！')
-      if (this.eng < 20) this._sendNotif('tired',  'Toki 很累 😴', '他快撐不住了，讓他休息一下。')
-      if (this.moo < 20) this._sendNotif('mood',   'Toki 心情很差 😤', '他在生悶氣，去陪他說說話。')
+
+      if (this.sat <= 0) this._sendNotif('sat_crit', 'Toki 餓壞了 🚨',     '「...我不餓。」（他在說謊）', 1)
+      if (this.eng <= 0) this._sendNotif('eng_crit', 'Toki 累到趴下了 💤', '「閉嘴，讓我睡。」體力歸零了。', 1)
+      if (this.moo <= 0) this._sendNotif('moo_crit', 'Toki 快爆發了 💢',   '「別管我。」他心情差到極點了。', 1)
+
+      if (this.sat > 0 && this.sat < 20) this._sendNotif('sat_warn', 'Toki 餓了 🍜',       '他已經快餓壞了，快去餵他！')
+      if (this.eng > 0 && this.eng < 20) this._sendNotif('eng_warn', 'Toki 很累 😴',       '他快撐不住了，讓他休息一下。')
+      if (this.moo > 0 && this.moo < 20) this._sendNotif('moo_warn', 'Toki 心情很差 😤',   '他在生悶氣，去陪他說說話。')
+    },
+
+    // 背景：進入背景時一次算好所有未來時間點，交給 iOS 系統倒數
+    scheduleBackgroundNotifications() {
+      if (this.sleeping) {
+        // 睡眠中只排睡醒後的衰減，不發緊急通知
+        _tokiBridge({ action: 'cancelAll' })
+        return
+      }
+
+      // 每秒衰減速率（8 秒 tick / 64 = 每秒）
+      const nightMult = this.nightMode ? 2 : 1
+      const DECAY = {
+        sat: 1.0 / 64,
+        eng: (1.2 / 64) * nightMult,
+        moo: 0.6 / 64
+      }
+
+      // 計算幾秒後會到門檻，最小 1 秒（iOS 不接受 delay <= 0）
+      const secsUntil = (val, threshold, decay) =>
+        decay <= 0 ? null : Math.max(1, Math.round((val - threshold) / decay))
+
+      const jobs = []
+
+      // sat
+      if (this.sat > 20) jobs.push({ id: 'sat_warn', title: 'Toki 餓了 🍜',       body: '他快餓壞了，快去餵他！',              delay: secsUntil(this.sat, 20, DECAY.sat) })
+      if (this.sat > 0)  jobs.push({ id: 'sat_crit', title: 'Toki 餓壞了 🚨',     body: '「...我不餓。」（他在說謊）',          delay: secsUntil(this.sat, 0,  DECAY.sat) })
+
+      // eng
+      if (this.eng > 20) jobs.push({ id: 'eng_warn', title: 'Toki 很累 😴',       body: '他快撐不住了，讓他休息一下。',          delay: secsUntil(this.eng, 20, DECAY.eng) })
+      if (this.eng > 0)  jobs.push({ id: 'eng_crit', title: 'Toki 累到趴下了 💤', body: '「閉嘴，讓我睡。」體力歸零了。',        delay: secsUntil(this.eng, 0,  DECAY.eng) })
+
+      // moo
+      if (this.moo > 20) jobs.push({ id: 'moo_warn', title: 'Toki 心情很差 😤',   body: '他在生悶氣，去陪他說說話。',            delay: secsUntil(this.moo, 20, DECAY.moo) })
+      if (this.moo > 0)  jobs.push({ id: 'moo_crit', title: 'Toki 快爆發了 💢',   body: '「別管我。」他心情差到極點了。',        delay: secsUntil(this.moo, 0,  DECAY.moo) })
+
+      // 先取消舊的，再全部重排
+      _tokiBridge({ action: 'cancelAll' })
+      for (const j of jobs) {
+        _tokiBridge({ action: 'schedule', id: j.id, title: j.title, body: j.body, delay: j.delay })
+      }
+    },
+
+    // App 回到前景：取消還沒發的背景排程，避免數值已回復還繼續發
+    cancelBackgroundNotifications() {
+      _tokiBridge({ action: 'cancelAll' })
+      this._notifSent = {}
     },
 
     _sendNotif(id, title, body, delay = 1) {
