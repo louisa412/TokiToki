@@ -63,7 +63,7 @@ body::before {
 
 .sprite-wrap {
   flex:1 1 0;
-  min-height:120px;  /* 防止塌陷：給一個最小高度 */
+  min-height:200px;  /* 防止塌陷：給一個最小高度 */
   width:100%;
   display:flex;
   align-items:center;
