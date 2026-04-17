@@ -214,7 +214,9 @@ export const usePetStore = defineStore('pet', {
     // Cooldowns
     careCooldowns:   {},   // { [itemId]: timestamp }
     actionCooldowns: {},   // { [actionId]: timestamp }
-    checkupDone: false,
+    checkupDone:   false,
+    checkupActive: false,   // 體檢劇場進行中
+    checkupTier:   null,    // 'good' | 'ok' | 'bad'，開場決定，結束才生效
 
     // Notification dedup
     _notifSent: {}
@@ -508,17 +510,9 @@ export const usePetStore = defineStore('pet', {
         this.careCooldowns[id] = nowMs()
       }
 
-      // 一次性體檢
+      // 一次性體檢 → 改由 openCheckup / closeCheckup 處理
       if (item.type === 'once') {
-        if (this.checkupDone) return 'used'
-        this.checkupDone = true
-        this.sat = clamp(this.sat + (item.sat || 0))
-        this.moo = clamp(this.moo + (item.moo || 0))
-        this.aff = clamp(this.aff + (item.aff || 0), 0, 300)
-        this.hlt = clamp(this.hlt + (item.hlt || 0))
-        this.react('happy', item.msgs, 2500)
-        this.save()
-        return
+        return this.openCheckup()
       }
 
       this.hlt = clamp(this.hlt + (item.hlt || 0))
@@ -560,6 +554,44 @@ export const usePetStore = defineStore('pet', {
         this.closeGame()
         this.react(sprite, msgs, 2000)
       }, 1100)
+    },
+
+    // ── Checkup ───────────────────────────────────────────────────────────
+
+    openCheckup() {
+      if (this.checkupDone)             return 'used'
+      if (this.reacting || this.sleeping) return
+      if (this.isDisturbed)             return 'disturbed'
+      // 開場就決定結果 tier（根據當前健康值）
+      this.checkupTier   = this.hlt >= 70 ? 'good' : this.hlt >= 40 ? 'ok' : 'bad'
+      this.checkupActive = true
+      return 'ok'
+    },
+
+    closeCheckup() {
+      const tier         = this.checkupTier
+      this.checkupActive = false
+      this.checkupDone   = true
+      this.checkupTier   = null
+
+      // 依結果 tier 套用數值
+      if (tier === 'good') {
+        this.hlt = clamp(this.hlt + 15)
+        this.moo = clamp(this.moo + 10)
+        this.aff = clamp(this.aff + 12, 0, 300)
+        this.react('praised', ['...沒問題。我就說了。', '全部正常。當然。', '...嗯。健康。'], 2200)
+      } else if (tier === 'ok') {
+        this.hlt = clamp(this.hlt + 20)
+        this.moo = clamp(this.moo + 3)
+        this.aff = clamp(this.aff + 8, 0, 300)
+        this.react('energetic', ['...要注意一下。', '沒大問題。', '...聽到了。'], 2200)
+      } else {
+        this.hlt = clamp(this.hlt + 25)
+        this.moo = clamp(this.moo - 5)
+        this.aff = clamp(this.aff + 5, 0, 300)
+        this.react('sad', ['...我知道了。', '...下次會注意。', '（沉默）'], 2200)
+      }
+      this.save()
     },
 
     // ── Sickness ──────────────────────────────────────────────────────────

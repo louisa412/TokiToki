@@ -28,6 +28,12 @@
     <!-- Mini-game modal -->
     <GameModal />
 
+    <!-- 定期體檢劇場 -->
+    <CheckupModal />
+
+    <!-- 久違回來開場 -->
+    <SplashScreen v-if="showSplash" :elapsed="splashElapsed" @done="showSplash = false" />
+
     <!-- Toast -->
     <Transition name="toast">
       <div v-if="toast.visible" class="toast" :class="toast.type">{{ toast.msg }}</div>
@@ -42,7 +48,9 @@ import TokiSprite  from './components/TokiSprite.vue'
 import StatsPanel  from './components/StatsPanel.vue'
 import SleepControls from './components/SleepControls.vue'
 import ActionPanel from './components/ActionPanel.vue'
-import GameModal   from './components/GameModal.vue'
+import GameModal     from './components/GameModal.vue'
+import CheckupModal  from './components/CheckupModal.vue'
+import SplashScreen  from './components/SplashScreen.vue'
 
 const store = usePetStore()
 
@@ -53,6 +61,10 @@ function updateClock() {
   const p = n => String(n).padStart(2, '0')
   clock.value = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
 }
+
+// ── Splash ─────────────────────────────────────────────────────────────────
+const showSplash    = ref(false)
+const splashElapsed = ref(0)
 
 // ── Toast ──────────────────────────────────────────────────────────────────
 const toast = ref({ visible: false, msg: '', type: 'gold' })
@@ -80,7 +92,11 @@ onMounted(() => {
   const result = store.load()
   if (result && result.elapsed) {
     const mins = Math.round(result.elapsed / 60)
-    if (result.elapsed > 7200) {
+    if (result.elapsed >= 10800) {
+      // 3 小時以上 → 開場演出
+      splashElapsed.value = result.elapsed
+      showSplash.value    = true
+    } else if (result.elapsed > 7200) {
       setTimeout(() => showToast({ msg: `你去哪了？${Math.floor(result.elapsed / 3600)}小時了。`, type: 'red' }), 800)
     } else if (mins > 10) {
       setTimeout(() => showToast({ msg: `你消失了${mins}分鐘...`, type: 'blue' }), 800)
