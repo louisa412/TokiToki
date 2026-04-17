@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { usePetStore } from '../stores/pet'
 
 const store = usePetStore()
@@ -112,14 +112,12 @@ function startSequence() {
   }, 6800)
 }
 
-// 監聽 modal 開啟
-watch(() => store.checkupActive, (val) => {
-  if (val) {
-    phase.value   = 0
-    waitPct.value = 0
-    msgVisible.value = false
-    startSequence()
-  }
+// v-if 確保 component 只在 checkupActive=true 時才 mount，直接 onMounted 啟動
+onMounted(() => {
+  phase.value      = 0
+  waitPct.value    = 0
+  msgVisible.value = false
+  startSequence()
 })
 
 function finish() {
