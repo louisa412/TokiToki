@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { usePetStore } from '../stores/pet'
 
 const store = usePetStore()
@@ -54,9 +54,13 @@ const phase      = ref(0)
 const currentMsg = ref('')
 const msgVisible = ref(false)
 const waitPct    = ref(0)
+let sequenceId   = 0
 
 const timers = []
 const t = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(id); return id }
+function clearTimers() {
+  while (timers.length) clearTimeout(timers.pop())
+}
 
 // 每個 phase 的地點
 const locationLabel = computed(() => ['診所門口', '候診室', '診療室'][phase.value] ?? '診療室')
@@ -91,38 +95,48 @@ function showMsg(msgs) {
 }
 
 function startSequence() {
+  sequenceId += 1
+  const runId = sequenceId
+  clearTimers()
+
   // 第一幕：門口
   phase.value = 0
+  waitPct.value = 0
   showMsg(ACT[0])
 
   // 第二幕：候診室（3s 後）
   t(() => {
+    if (!store.checkupActive || runId !== sequenceId) return
     phase.value = 1
     showMsg(ACT[1])
     // 進度條動畫
     waitPct.value = 0
     t(() => { waitPct.value = 100 }, 100)
+    // 第三幕：結果（第二幕後 3.8s）
+    t(() => {
+      if (!store.checkupActive || runId !== sequenceId) return
+      phase.value = 2
+      const tier = store.checkupTier || 'ok'
+      showMsg(ACT[tier] || ACT.ok)
+    }, 3800)
   }, 3000)
-
-  // 第三幕：結果（3+3.8s 後）
-  t(() => {
-    phase.value = 2
-    const tier = store.checkupTier || 'ok'
-    showMsg(ACT[tier])
-  }, 6800)
 }
 
-// v-if 確保 component 只在 checkupActive=true 時才 mount，直接 onMounted 啟動
-onMounted(() => {
-  phase.value      = 0
-  waitPct.value    = 0
-  msgVisible.value = false
-  startSequence()
-})
+watch(() => store.checkupActive, (active) => {
+  if (active) {
+    phase.value      = 0
+    waitPct.value    = 0
+    msgVisible.value = false
+    startSequence()
+    return
+  }
+  sequenceId += 1
+  clearTimers()
+}, { immediate: true })
 
 function finish() {
   store.closeCheckup()
 }
 
-onUnmounted(() => timers.forEach(clearTimeout))
+onUnmounted(() => clearTimers())
 </script>
