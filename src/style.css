@@ -15,7 +15,7 @@ body {
   font-family:'M PLUS Rounded 1c',sans-serif;
   height:100dvh; height:100svh; height:100vh;
   overflow:hidden; display:flex; flex-direction:column; align-items:center;
-  padding-top:var(--sat-top); padding-bottom:var(--sat-bot);
+  padding-top:0; padding-bottom:var(--sat-bot);
   padding-left:var(--sat-l);  padding-right:var(--sat-r);
 }
 body::before {
@@ -27,23 +27,30 @@ body::before {
 .app {
   width:100%; max-width:430px; height:100%;
   display:flex; flex-direction:column;
-  padding:10px 14px 8px; overflow-y:auto; overflow-x:hidden; gap:7px;
+  padding:calc(var(--sat-top) + 12px) 14px 8px; overflow-y:auto; overflow-x:hidden; gap:7px;
 }
 
 /* ── Header ────────────────────────────────────────────── */
-.header { display:flex; justify-content:space-between; align-items:flex-start; flex-shrink:0; }
+.header {
+  display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:12px;
+  flex-shrink:0; padding:10px 10px 8px;
+  background:linear-gradient(180deg,rgba(30,30,42,.92) 0%, rgba(22,22,31,.92) 100%);
+  border:1px solid var(--bd); border-radius:3px;
+}
+.header-main { min-width:0; }
+.title-row { display:flex; align-items:center; min-height:20px; }
 .title {
   font-family:'Press Start 2P',monospace; font-size:clamp(13px,4vw,16px);
   color:var(--red); text-shadow:0 0 18px rgba(232,64,64,.5); letter-spacing:3px;
 }
 .lv-badge {
   font-family:'Press Start 2P',monospace; font-size:clamp(9px,2.5vw,11px);
-  margin-top:4px; color:var(--dim);
+  margin-top:8px; color:var(--dim); line-height:1.6;
 }
 .lv-badge span { color:var(--gold); }
-.hdr-r { text-align:right; }
+.hdr-r { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px; padding-top:2px; }
 .clock { font-family:'Press Start 2P',monospace; font-size:clamp(10px,2.8vw,12px); color:var(--dim); }
-.night-txt { font-family:'Press Start 2P',monospace; font-size:clamp(8px,2.2vw,10px); color:var(--blue); margin-top:3px; min-height:9px; }
+.night-txt { font-family:'Press Start 2P',monospace; font-size:clamp(8px,2.2vw,10px); color:var(--blue); min-height:10px; }
 
 /* ── Display (sprite area) ─────────────────────────────── */
 .display {
