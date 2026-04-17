@@ -438,3 +438,102 @@ body::before {
   color:#50c878; font-size:8px;
   font-family:'Press Start 2P',monospace;
 }
+
+/* ── Splash Screen ─────────────────────────────────────────────────────── */
+.splash-overlay {
+  position:fixed; inset:0; z-index:9999;
+  background:#000; display:flex; align-items:center; justify-content:center;
+  animation:splash-in .5s ease forwards;
+  cursor:pointer;
+}
+.splash-out { animation:splash-fade .5s ease forwards; }
+@keyframes splash-in   { from{opacity:0} to{opacity:1} }
+@keyframes splash-fade { from{opacity:1} to{opacity:0} }
+
+.splash-body { text-align:center; padding:20px; }
+.splash-logo {
+  font-family:'Press Start 2P',monospace; font-size:clamp(18px,6vw,28px);
+  color:#fff; letter-spacing:6px; line-height:1.8;
+  animation:splash-slide .6s .2s both;
+}
+.splash-divider {
+  color:var(--dim); font-size:12px; margin:14px 0;
+  animation:splash-slide .6s .4s both;
+}
+.splash-duration {
+  font-family:'Press Start 2P',monospace; font-size:10px;
+  color:var(--dim); margin-bottom:10px;
+  animation:splash-slide .6s .5s both;
+}
+.splash-msg {
+  font-family:'Press Start 2P',monospace; font-size:clamp(11px,3.5vw,14px);
+  color:var(--gold); line-height:2.2; max-width:280px;
+  animation:splash-slide .6s .7s both;
+}
+.splash-skip {
+  font-family:'Press Start 2P',monospace; font-size:9px;
+  color:var(--dim); margin-top:24px;
+  animation:splash-slide .6s 1.2s both;
+}
+@keyframes splash-slide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Checkup Modal ─────────────────────────────────────────────────────── */
+.checkup-overlay {
+  position:fixed; inset:0; z-index:800;
+  background:rgba(0,0,0,.75);
+  display:flex; align-items:flex-start; justify-content:center;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  box-sizing:border-box;
+}
+.checkup-card {
+  background:var(--sur); border:1px solid var(--bd); border-radius:3px;
+  padding:20px 18px; width:min(320px, 100%); display:flex; flex-direction:column; gap:14px;
+  margin:auto;
+}
+
+/* 進度點 */
+.checkup-dots { display:flex; align-items:center; justify-content:center; gap:4px; }
+.ck-dot {
+  width:10px; height:10px; border-radius:50%; border:1px solid var(--bd);
+  background:var(--s2); transition:all .3s;
+}
+.ck-dot.active { background:var(--gold); border-color:var(--gold); box-shadow:0 0 6px rgba(245,185,66,.5); }
+.ck-dot.past   { background:var(--grn);  border-color:var(--grn); }
+.ck-dash { font-size:10px; color:var(--bd); }
+
+/* 地點 */
+.checkup-location {
+  font-family:'Press Start 2P',monospace; font-size:9px;
+  color:var(--dim); text-align:center; letter-spacing:1px;
+}
+
+/* 台詞氣泡 */
+.checkup-bubble {
+  background:var(--s2); border:1px solid var(--bd); border-radius:2px;
+  padding:12px; min-height:54px;
+  opacity:0; transform:translateY(4px); transition:all .3s;
+}
+.checkup-bubble.ck-in { opacity:1; transform:translateY(0); }
+.ck-speaker { font-family:'Press Start 2P',monospace; font-size:9px; color:var(--gold); display:block; margin-bottom:6px; }
+.ck-text    { font-family:'Press Start 2P',monospace; font-size:clamp(9px,2.8vw,11px); color:var(--txt); line-height:2.1; }
+
+/* 等待進度條 */
+.ck-wait { display:flex; flex-direction:column; gap:5px; }
+.ck-wait-bar  { height:4px; background:var(--s2); border:1px solid var(--bd); overflow:hidden; }
+.ck-wait-fill { height:100%; background:var(--gold); transition:width 3.6s linear; }
+.ck-wait-label { font-family:'Press Start 2P',monospace; font-size:9px; color:var(--dim); text-align:center; }
+
+/* 結果標籤 */
+.ck-result { font-family:'Press Start 2P',monospace; font-size:10px; text-align:center; padding:8px; border-radius:2px; }
+.ck-good   { color:#50c878; border:1px solid #50c878; background:rgba(80,200,120,.08); }
+.ck-ok     { color:var(--gold); border:1px solid var(--gold); background:rgba(245,185,66,.08); }
+.ck-bad    { color:var(--red);  border:1px solid var(--red);  background:rgba(232,64,64,.08); }
+
+/* 離開按鈕 */
+.ck-leave {
+  background:var(--s2); border:1px solid var(--bd); border-radius:2px;
+  color:var(--txt); font-family:'Press Start 2P',monospace; font-size:10px;
+  padding:10px; cursor:pointer; width:100%; transition:all .1s;
+}
+.ck-leave:hover { border-color:var(--gold); color:var(--gold); }
