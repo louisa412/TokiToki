@@ -39,14 +39,14 @@ const imgRef     = ref(null)
 // 允許的圖檔，避免錯字導致 404
 const SPRITE_NAMES = new Set([
   'sleeping', 'hungry', 'happy', 'patted', 'energetic',
-  'praised', 'disturbed', 'sleepy', 'sad'
+  'praised', 'disturbed', 'sleepy', 'sad', 'sick'
 ])
 
-// 睡眠中永遠顯示 sleeping，不受 currentSprite 被其他邏輯覆蓋影響
+// 優先級：睡眠 > 生病（非反應中）> 一般 sprite
 const spriteSrc = computed(() => {
-  const name = store.isSleeping
-    ? 'sleeping'
-    : (SPRITE_NAMES.has(store.currentSprite) ? store.currentSprite : 'energetic')
+  if (store.isSleeping) return `${import.meta.env.BASE_URL}images/sleeping.png`
+  if (store.isSick && !store.reacting) return `${import.meta.env.BASE_URL}images/sick.png`
+  const name = SPRITE_NAMES.has(store.currentSprite) ? store.currentSprite : 'energetic'
   return `${import.meta.env.BASE_URL}images/${name}.png`
 })
 

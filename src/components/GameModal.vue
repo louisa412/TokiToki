@@ -30,7 +30,11 @@ const GAME_COMPONENTS = {
   shoot:  defineAsyncComponent(() => import('./games/ShootGame.vue')),
   polish: defineAsyncComponent(() => import('./games/PolishGame.vue')),
   walk:   defineAsyncComponent(() => import('./games/WalkGame.vue')),
-  listen: defineAsyncComponent(() => import('./games/ListenGame.vue'))
+  listen: defineAsyncComponent(() => import('./games/ListenGame.vue')),
+  typing: defineAsyncComponent(() => import('./games/TypingGame.vue')),
+  memory: defineAsyncComponent(() => import('./games/MemoryGame.vue')),
+  quiz:   defineAsyncComponent(() => import('./games/QuizGame.vue')),
+  dice:   defineAsyncComponent(() => import('./games/DiceGame.vue'))
 }
 
 const currentGame = computed(() =>

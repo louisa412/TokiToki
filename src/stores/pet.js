@@ -3,14 +3,47 @@ import { defineStore } from 'pinia'
 // ── Constants ──────────────────────────────────────────────────────────────
 
 export const FOODS = [
-  { id: 'coffee',  ico: '☕', name: '黑咖啡',       sat: 5,  moo: 10, aff: 5,  eng: 0,  sp: 'praised',   msgs: ['嗯。這個可以。', '...勉強合格。', '黑的才對。'] },
-  { id: 'ramen',   ico: '🍜', name: '家系拉麵',      sat: 40, moo: 15, aff: 10, eng: 0,  sp: 'happy',     msgs: ['...不錯。', '哼，還行。', '就這個。'] },
-  { id: 'bento',   ico: '🍱', name: '燒肉便當',      sat: 35, moo: 10, aff: 8,  eng: 5,  sp: 'energetic', msgs: ['蛋白質。補充完畢。', '...吃完繼續。', '好。'] },
-  { id: 'mapo',    ico: '🌶', name: '激辛麻婆豆腐',  sat: 20, moo: 20, aff: 15, eng: 0,  sp: 'happy',     msgs: ['...辣得剛好。', '汗出來了。還行。', '這才叫吃飯。'] },
-  { id: 'porridge',ico: '🍓', name: '草莓粥 ★',      sat: 50, moo: -20,aff: 30, eng: 0,  sp: 'sad',       msgs: ['......你做的？', '...甜的。', '...為什麼是草莓。算了。'] },
-  { id: 'cig',     ico: '🚬', name: '巧克力香菸',    sat: 0,  moo: 25, aff: 5,  eng: 0,  sp: 'praised',   msgs: ['...這種例外。', '不是我喜歡甜的。', '...好抽。'] },
-  { id: 'shumai',  ico: '🥟', name: '橫濱燒賣',      sat: 15, moo: 10, aff: 5,  eng: 0,  sp: 'energetic', msgs: ['橫濱的味道。', '...合格。', '還不錯。'] },
-  { id: 'energy',  ico: '⚡', name: '能量飲',         sat: 5,  moo: 5,  aff: 0,  eng: 30, sp: 'energetic', msgs: ['準備好了。', '...體力回來了。', '來吧。'] }
+  // ── 原有食物 ──────────────────────────────────────────────────────────
+  { id: 'coffee',   ico: '☕', name: '黑咖啡',       sat: 5,  hlt: 0,   moo: 10,  aff: 5,  sp: 'praised',   msgs: ['嗯。這個可以。', '...勉強合格。', '黑的才對。'] },
+  { id: 'ramen',    ico: '🍜', name: '家系拉麵',      sat: 40, hlt: -8,  moo: 15,  aff: 10, sp: 'happy',     msgs: ['...不錯。', '哼，還行。', '就這個。'] },
+  { id: 'bento',    ico: '🍱', name: '燒肉便當',      sat: 35, hlt: 5,   moo: 10,  aff: 8,  sp: 'energetic', msgs: ['蛋白質。補充完畢。', '...吃完繼續。', '好。'] },
+  { id: 'mapo',     ico: '🌶', name: '激辛麻婆豆腐',  sat: 20, hlt: -5,  moo: 20,  aff: 15, sp: 'happy',     msgs: ['...辣得剛好。', '汗出來了。還行。', '這才叫吃飯。'] },
+  { id: 'porridge', ico: '🍓', name: '草莓粥 ★',      sat: 50, hlt: 10,  moo: -20, aff: 30, sp: 'sad',       msgs: ['......你做的？', '...甜的。', '...為什麼是草莓。算了。'] },
+  { id: 'cig',      ico: '🚬', name: '巧克力香菸',    sat: 0,  hlt: -10, moo: 25,  aff: 5,  sp: 'praised',   msgs: ['...這種例外。', '不是我喜歡甜的。', '...好抽。'] },
+  { id: 'shumai',   ico: '🥟', name: '橫濱燒賣',      sat: 15, hlt: 3,   moo: 10,  aff: 5,  sp: 'energetic', msgs: ['橫濱的味道。', '...合格。', '還不錯。'] },
+  { id: 'energy',   ico: '⚡', name: '能量飲',         sat: 5,  hlt: -5,  moo: 5,   aff: 0,  sp: 'energetic', msgs: ['準備好了。', '...體力回來了。', '來吧。'] },
+  // ── 上次新增食物 ───────────────────────────────────────────────────────
+  { id: 'noodle',   ico: '🍝', name: '泡麵 🌙',        sat: 45, hlt: -12, moo: 15,  aff: 8,  sp: 'happy',     msgs: ['...深夜吃這個最好。', '鹽分超標。知道了。', '...燙的才行。'], nightOnly: true },
+  { id: 'beer',     ico: '🍺', name: '罐裝啤酒',       sat: 5,  hlt: -8,  moo: 20,  aff: 5,  sp: 'happy',     msgs: ['...還行。', '苦的才對。', '一罐就好。'] },
+  { id: 'onigiri',  ico: '🍙', name: '鹽味飯糰',       sat: 25, hlt: 5,   moo: 5,   aff: 3,  sp: 'energetic', msgs: ['簡單的就行。', '...鹽分剛好。', '不用多的。'] },
+  { id: 'donut',    ico: '🍩', name: '甜甜圈',          sat: 20, hlt: -6,  moo: 30,  aff: 8,  sp: 'happy',     msgs: ['...甜的。', '別說出去。', '就這次。'] },
+  { id: 'chips',    ico: '🍟', name: '辣味薯片',        sat: 10, hlt: -8,  moo: 15,  aff: 5,  sp: 'energetic', msgs: ['辣的才對。', '...脆。', '可以。'] },
+  { id: 'matcha',   ico: '🍦', name: '抹茶冰淇淋',     sat: 15, hlt: 2,   moo: 20,  aff: 10, sp: 'praised',   msgs: ['...抹茶還行。', '甜度適中。', '...你記得我喜歡這個？'] },
+  // ── 健康向食物（好感分三段懲罰）──────────────────────────────────────
+  { id: 'salad',    ico: '🥗', name: '蔬菜沙拉',   sat: 10, hlt: 25, sp: 'sad', healthFood: true,
+    mooTiers: [-15, -8, -4], affTiers: [-5, -2, 0],
+    msgTiers: [
+      ['你想幹嘛。這什麼東西。', '我又不是兔子。', '...不吃。'],
+      ['...你是認真的。', '吃就吃。少廢話。', '...隨便。'],
+      ['...算了。你說好就好。', '...不難吃。（小聲）', '...謝。']
+    ]
+  },
+  { id: 'greentea', ico: '🍵', name: '無糖綠茶',   sat: 0,  hlt: 20, sp: 'sad', healthFood: true,
+    mooTiers: [-5, -2, 0], affTiers: [0, 0, 3],
+    msgTiers: [
+      ['...這什麼。', '沒味道。', '你在折磨我？'],
+      ['...還行。', '淡的。', '勉強喝。'],
+      ['...習慣了。', '有點苦。還行。', '...謝。']
+    ]
+  },
+  { id: 'chicken',  ico: '🍗', name: '水煮雞胸肉', sat: 30, hlt: 30, sp: 'sad', healthFood: true,
+    mooTiers: [-20, -12, -6], affTiers: [-8, -3, 0],
+    msgTiers: [
+      ['你在懲罰我嗎。', '這叫吃飯？', '...難吃。'],
+      ['...吃完了。', '下次別這個。', '...謝。'],
+      ['...你擔心我。', '知道了。吃。', '...沒你想的那麼難吃。（小聲）']
+    ]
+  }
 ]
 
 export const GAMES = [
@@ -21,7 +54,48 @@ export const GAMES = [
   { id: 'shoot',  ico: '🎯', name: '標靶射擊' },
   { id: 'polish', ico: '🎙', name: '擦麥克風' },
   { id: 'walk',   ico: '🗺', name: '橫濱散步' },
-  { id: 'listen', ico: '💬', name: '聽他抱怨' }
+  { id: 'listen', ico: '💬', name: '聽他抱怨' },
+  { id: 'typing', ico: '⌨', name: '打字競速' },
+  { id: 'memory', ico: '🃏', name: '記憶翻牌' },
+  { id: 'quiz',   ico: '❓', name: '問答猜謎' },
+  { id: 'dice',   ico: '🎲', name: '骰子大小' }
+]
+
+export const CARE_ITEMS = [
+  // 緊急醫療
+  { id: 'medicine', ico: '💊', name: '吃藥',    type: 'urgent', hlt: 25, moo: -10, aff: 0,
+    msgs:       ['...苦的。', '不需要你多管。', '...謝。'],
+    refuseMsgs: ['我沒事。', '你多管什麼。', '退開。']
+  },
+  { id: 'bandage',  ico: '🩹', name: '貼藥布',  type: 'urgent', hlt: 15, moo: -5,  aff: 0,
+    msgs:       ['...小傷而已。', '不用這麼緊張。', '...謝。'],
+    refuseMsgs: ['哪裡需要。', '你眼神有問題。', '走開。']
+  },
+  { id: 'clinic',   ico: '🏥', name: '去診所',  type: 'urgent', hlt: 40, moo: -5,  aff: -5,
+    msgs:       ['...沒事了。', '就是小問題。', '...早點來就好了。'],
+    refuseMsgs: ['你說我病？', '我自己的身體我清楚。', '不要。']
+  },
+  // 日常保養
+  { id: 'supplement', ico: '🧴', name: '保健食品', type: 'daily',  hlt: 10, moo: 0,   aff: 2,  cooldownHours: 24,
+    msgs: ['...這什麼。', '每天都要吃？', '...好。']
+  },
+  { id: 'bath',       ico: '🛁', name: '泡澡',    type: 'daily',  hlt: 5,  moo: 15,  aff: 5,  cooldownHours: 24,
+    msgs: ['...洗完了。', '別偷看。', '...舒服一點了。']
+  },
+  { id: 'haircut',    ico: '✂️', name: '剪頭髮',  type: 'weekly', hlt: 0,  moo: 10,  aff: 12, cooldownHours: 168,
+    msgs: ['...整齊多了。', '不要剪太短。', '...還行。']
+  },
+  // 定期體檢（限一次）
+  { id: 'checkup',    ico: '🩺', name: '定期體檢', type: 'once',  hlt: 15, moo: 5,   aff: 10, sat: 5,
+    msgs: ['...沒問題。', '結果出來了。都正常。', '...你記得幫我約。謝。']
+  }
+]
+
+export const UNLOCK_ACTIONS = [
+  { id: 'scarf',      ico: '🧣', name: '提醒穿外套',   minAff: 80  },
+  { id: 'sit',        ico: '📖', name: '陪他安靜坐著', minAff: 120, cooldownHours: 6 },
+  { id: 'headphones', ico: '🎧', name: '借他耳機聽歌', minAff: 160, cooldownHours: 8 },
+  { id: 'latenight',  ico: '🌙', name: '深夜一起待著', minAff: 200, nightOnly: true  }
 ]
 
 export const TITLES = [
@@ -41,8 +115,6 @@ const IDLE_MSGS = {
     '你不會沒發現。還是你裝的。',
     '我現在沒什麼耐心。',
     '你要幫就快一點。不要拖。',
-    '我不想等太久。',
-    '再晚一點我可能會更不爽。',
     '快點。',
     '你想讓我餓死嗎。'
   ],
@@ -50,7 +122,6 @@ const IDLE_MSGS = {
     '我有點累。不是因為你。只是剛好。',
     '現在聲音有點遠。',
     '安靜一點。',
-    '我可能會睡著。',
     '...困了。讓我睡。',
     '眼睛睜不開...',
     '反正我會先睡。'
@@ -75,10 +146,19 @@ const IDLE_MSGS = {
     '哼。今天狀態不差。',
     '...有什麼事嗎。',
     '就這樣站著看嗎。'
+  ],
+  sick: [
+    '...頭有點重。別吵我。',
+    '...最近狀態不太好。',
+    '身體有點沉。',
+    '...不舒服。別問。',
+    '有點發燒的感覺。不嚴重。',
+    '...你來了。就待著。',
+    '...現在不想動。',
+    '安靜點。頭很痛。'
   ]
 }
 
-// 深夜專屬台詞（nightMode 時 idleUpdate 會混入）
 const NIGHT_MSGS = [
   '這時間你還醒著。也太誇張。',
   '我也是。所以才在這。',
@@ -89,9 +169,10 @@ const NIGHT_MSGS = [
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const clamp   = (v, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, v))
-const rnd     = arr => arr[Math.floor(Math.random() * arr.length)]
-const nowMs   = () => Date.now()
+const clamp    = (v, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, v))
+const rnd      = arr => arr[Math.floor(Math.random() * arr.length)]
+const nowMs    = () => Date.now()
+const todayStr = () => new Date().toISOString().slice(0, 10)
 
 // ── Store ──────────────────────────────────────────────────────────────────
 
@@ -99,7 +180,7 @@ export const usePetStore = defineStore('pet', {
   state: () => ({
     // Core stats
     sat: 75,
-    eng: 70,
+    hlt: 70,
     moo: 65,
     aff: 50,
 
@@ -120,10 +201,20 @@ export const usePetStore = defineStore('pet', {
     lastPatTime: 0,
 
     // Sleep state
-    sleeping: null,    // null | 'nap' | 'bed'
+    sleeping: null,
     sleepEnd: null,
     sleepStart: null,
-    _sleepNow: 0,      // 每秒更新，讓 sleepRemaining getter 可以重算
+    _sleepNow: 0,
+
+    // Sickness
+    sick: false,
+    sickUntil: null,
+    lastSickCheck: '',
+
+    // Cooldowns
+    careCooldowns:   {},   // { [itemId]: timestamp }
+    actionCooldowns: {},   // { [actionId]: timestamp }
+    checkupDone: false,
 
     // Notification dedup
     _notifSent: {}
@@ -137,8 +228,9 @@ export const usePetStore = defineStore('pet', {
       }
       return title
     },
-    isDisturbed: (state) => nowMs() < state.disturbedUntil,
-    isSleeping:  (state) => !!state.sleeping,
+    isDisturbed:    (state) => nowMs() < state.disturbedUntil,
+    isSleeping:     (state) => !!state.sleeping,
+    isSick:         (state) => state.sick && (state.sickUntil === null || nowMs() < state.sickUntil),
     sleepRemaining: (state) => state.sleepEnd ? Math.max(0, state.sleepEnd - state._sleepNow) : 0
   },
 
@@ -147,9 +239,13 @@ export const usePetStore = defineStore('pet', {
 
     save() {
       try {
-        localStorage.setItem('toki_v4', JSON.stringify({
-          sat: this.sat, eng: this.eng, moo: this.moo, aff: this.aff,
+        localStorage.setItem('toki_v5', JSON.stringify({
+          sat: this.sat, hlt: this.hlt, moo: this.moo, aff: this.aff,
           sleeping: this.sleeping, sleepEnd: this.sleepEnd, sleepStart: this.sleepStart,
+          sick: this.sick, sickUntil: this.sickUntil, lastSickCheck: this.lastSickCheck,
+          careCooldowns:   this.careCooldowns,
+          actionCooldowns: this.actionCooldowns,
+          checkupDone:     this.checkupDone,
           savedAt: nowMs()
         }))
       } catch (_) {}
@@ -157,37 +253,55 @@ export const usePetStore = defineStore('pet', {
 
     load() {
       try {
-        const raw = localStorage.getItem('toki_v4')
+        let raw      = localStorage.getItem('toki_v5')
+        let migrated = false
+        if (!raw) {
+          raw      = localStorage.getItem('toki_v4')
+          migrated = true
+        }
         if (!raw) return false
-        const d = JSON.parse(raw)
+        const d       = JSON.parse(raw)
         const elapsed = (nowMs() - d.savedAt) / 1000
-        const t = Math.min(elapsed, 21600)
+        const t       = Math.min(elapsed, 21600)
 
         this.sat = clamp(d.sat - t * (1.0 / 64))
-        this.eng = clamp(d.eng - t * (1.2 / 64))
+        this.hlt = clamp(migrated ? 70 : (d.hlt ?? 70))   // hlt 不隨離線衰減
         this.moo = clamp(d.moo - t * (0.6 / 64))
         this.aff = clamp(d.aff, 0, 300)
 
-        // Restore sleep
+        if (!migrated) {
+          this.sick            = d.sick || false
+          this.sickUntil       = d.sickUntil || null
+          this.lastSickCheck   = d.lastSickCheck || ''
+          this.careCooldowns   = d.careCooldowns || {}
+          this.actionCooldowns = d.actionCooldowns || {}
+          this.checkupDone     = d.checkupDone || false
+        }
+
+        // 離線時感冒自然痊癒但補扣 hlt
+        if (this.sick && this.sickUntil && nowMs() >= this.sickUntil) {
+          this.sick      = false
+          this.sickUntil = null
+          this.hlt       = clamp(this.hlt - 5)
+        }
+
         if (d.sleeping && d.sleepEnd) {
           this.sleeping   = d.sleeping
           this.sleepEnd   = d.sleepEnd
           this.sleepStart = d.sleepStart || d.savedAt
           if (nowMs() >= d.sleepEnd) {
-            // finished while away — schedule wakeup
             setTimeout(() => this.wakeUp(false), 500)
           }
           return true
         }
 
-        // Away toast (handled by App.vue)
         return { elapsed }
       } catch (_) {
         return false
       }
     },
 
-    // ── Decay (called every 8s) ───────────────────────────────────────────
+    // ── Decay (每 8 秒) ───────────────────────────────────────────────────
 
     tick() {
       if (this.sleeping) {
@@ -195,11 +309,13 @@ export const usePetStore = defineStore('pet', {
         this._updateNightMode()
         return
       }
-      const r = this.nightMode ? 2 : 1
+      const r       = this.nightMode ? 2 : 1
+      const mooMult = this.hlt < 30 ? 1.5 : 1   // 健康差 → 心情衰減加快
       this.sat = clamp(this.sat - 1.0 / 8)
-      this.eng = clamp(this.eng - (1.2 / 8) * r)
-      this.moo = clamp(this.moo - 0.6 / 8)
+      this.moo = clamp(this.moo - (0.6 / 8) * r * mooMult)
+      // hlt 不自然衰減，只靠食物 / 照護 / 生病改變
       this._updateNightMode()
+      this.checkSickness()
       if (!this.reacting && !this.inGame) this.idleUpdate()
       this.checkNotifications()
     },
@@ -211,19 +327,18 @@ export const usePetStore = defineStore('pet', {
 
     // ── Sprite & message ─────────────────────────────────────────────────
 
-    setSprite(name) {
-      this.currentSprite = name
-    },
-
-    setMsg(text) {
-      this.lastMsg = text
-    },
+    setSprite(name) { this.currentSprite = name },
+    setMsg(text)    { this.lastMsg = text },
 
     idleUpdate() {
       if (this.reacting || this.inGame || this.sleeping) return
+      // 生病時優先顯示 sick 台詞
+      if (this.isSick) {
+        this.setMsg(rnd(IDLE_MSGS.sick))
+        return
+      }
       const sp = this._getIdleSprite()
       this.setSprite(sp)
-      // 深夜有機率出現專屬台詞
       if (this.nightMode && Math.random() < 0.4) {
         this.setMsg(rnd(NIGHT_MSGS))
       } else {
@@ -233,12 +348,12 @@ export const usePetStore = defineStore('pet', {
 
     _getIdleSprite() {
       if (this.sat < 25) return 'hungry'
-      if (this.eng < 25) return 'sleepy'
+      if (this.hlt < 25) return 'sleepy'
       if (this.moo < 25) return 'sad'
       return 'energetic'
     },
 
-    // ── React (blocks UI for dur ms) ─────────────────────────────────────
+    // ── React ─────────────────────────────────────────────────────────────
 
     react(sprite, msgs, dur = 2200) {
       if (this.reacting) return
@@ -260,9 +375,9 @@ export const usePetStore = defineStore('pet', {
       this.rapidClicks.push(t)
       if (this.rapidClicks.length >= 5) {
         this.disturbedUntil = t + 10000
-        this.rapidClicks = []
+        this.rapidClicks    = []
         this.react('disturbed', ['煩死了。', '你有完沒完。', '再點我打你。'], 2000)
-        return true // was triggered
+        return true
       }
       return false
     },
@@ -302,22 +417,119 @@ export const usePetStore = defineStore('pet', {
           this.moo = clamp(this.moo - 15)
           this.react('disturbed', ['你煩嗎。', '你有完沒完。', '...去。'])
           break
+        // ── 好感解鎖互動 ─────────────────────────────────────────────────
+        case 'scarf':
+          this.moo = clamp(this.moo + 8)
+          this.aff = clamp(this.aff + 5, 0, 300)
+          this.react('happy', ['...知道了。', '多管閒事。', '...謝。'])
+          break
+        case 'sit': {
+          const cd = this.actionCooldowns['sit'] || 0
+          if (nowMs() - cd < 6 * 3600 * 1000) return 'cooldown'
+          this.actionCooldowns['sit'] = nowMs()
+          this.aff = clamp(this.aff + 12, 0, 300)
+          this.react('energetic', ['...。', '你不說話也行。', '...就這樣就好。'])
+          break
+        }
+        case 'headphones': {
+          const cd = this.actionCooldowns['headphones'] || 0
+          if (nowMs() - cd < 8 * 3600 * 1000) return 'cooldown'
+          this.actionCooldowns['headphones'] = nowMs()
+          this.moo = clamp(this.moo + 15)
+          this.hlt = clamp(this.hlt + 5)
+          this.aff = clamp(this.aff + 8, 0, 300)
+          this.react('happy', ['...不錯。', '這首我喜歡。', '你的品味還行。'])
+          break
+        }
+        case 'latenight':
+          if (!this.nightMode) return 'not_night'
+          this.aff = clamp(this.aff + 20, 0, 300)
+          this.react('praised', ['...你還在。', '深夜跟你待著，還行。', '...別走太早。'])
+          break
       }
       this.save()
     },
+
+    // ── Food ──────────────────────────────────────────────────────────────
 
     doFood(id) {
       if (this.reacting || this.sleeping) return
       if (this.isDisturbed) return 'disturbed'
       const f = FOODS.find(x => x.id === id)
       if (!f) return
-      this.sat = clamp(this.sat + f.sat)
-      this.moo = clamp(this.moo + f.moo)
-      this.eng = clamp(this.eng + f.eng)
-      this.aff = clamp(this.aff + f.aff, 0, 300)
-      this.react(f.sp, f.msgs, 2200)
+
+      this.sat = clamp(this.sat + (f.sat || 0))
+      this.hlt = clamp(this.hlt + (f.hlt || 0))
+
+      if (f.healthFood) {
+        // 好感三段：低 / 中 / 高
+        const tier = this.aff >= 200 ? 2 : this.aff >= 100 ? 1 : 0
+        this.moo = clamp(this.moo + f.mooTiers[tier])
+        this.aff = clamp(this.aff + f.affTiers[tier], 0, 300)
+        this.react(f.sp, f.msgTiers[tier], 2200)
+      } else {
+        this.moo = clamp(this.moo + (f.moo || 0))
+        this.aff = clamp(this.aff + (f.aff || 0), 0, 300)
+        this.react(f.sp, f.msgs, 2200)
+      }
       this.save()
     },
+
+    // ── Care ──────────────────────────────────────────────────────────────
+
+    doCare(id) {
+      if (this.reacting || this.sleeping) return
+      if (this.isDisturbed) return 'disturbed'
+      const item = CARE_ITEMS.find(x => x.id === id)
+      if (!item) return
+
+      // 緊急醫療：hlt > 30 且未生病時拒絕執行
+      if (item.type === 'urgent') {
+        const needsCare = this.hlt <= 30 || this.isSick
+        if (!needsCare) {
+          this.moo = clamp(this.moo - 10)
+          this.aff = clamp(this.aff - 5, 0, 300)
+          this.react('disturbed', item.refuseMsgs, 2000)
+          return 'refused'
+        }
+        // 治好感冒
+        if (this.isSick) {
+          this.sick         = false
+          this.sickUntil    = null
+          this.lastSickCheck = ''   // 允許隔天再觸發
+        }
+      }
+
+      // 每日 / 每週冷卻
+      if (item.type === 'daily' || item.type === 'weekly') {
+        const lastUsed   = this.careCooldowns[id] || 0
+        const cooldownMs = item.cooldownHours * 3600 * 1000
+        if (nowMs() - lastUsed < cooldownMs) return 'cooldown'
+        this.careCooldowns[id] = nowMs()
+      }
+
+      // 一次性體檢
+      if (item.type === 'once') {
+        if (this.checkupDone) return 'used'
+        this.checkupDone = true
+        this.sat = clamp(this.sat + (item.sat || 0))
+        this.moo = clamp(this.moo + (item.moo || 0))
+        this.aff = clamp(this.aff + (item.aff || 0), 0, 300)
+        this.hlt = clamp(this.hlt + (item.hlt || 0))
+        this.react('happy', item.msgs, 2500)
+        this.save()
+        return
+      }
+
+      this.hlt = clamp(this.hlt + (item.hlt || 0))
+      this.moo = clamp(this.moo + (item.moo || 0))
+      this.aff = clamp(this.aff + (item.aff || 0), 0, 300)
+
+      this.react('happy', item.msgs, 2200)
+      this.save()
+    },
+
+    // ── Game ──────────────────────────────────────────────────────────────
 
     openGame(id) {
       if (this.reacting || this.sleeping) return false
@@ -327,27 +539,55 @@ export const usePetStore = defineStore('pet', {
         this.aff = clamp(this.aff - 5, 0, 300)
         return false
       }
-      this.inGame = true
+      this.inGame      = true
       this.activeGameId = id
       return true
     },
 
     closeGame() {
-      this.inGame = false
+      this.inGame       = false
       this.activeGameId = null
       this.idleUpdate()
     },
 
     endGame(sprite, msgs, dm, de, da) {
-      this.moo = clamp(this.moo + dm)
-      this.eng = clamp(this.eng + de)
+      // hlt < 15 時遊戲回復減半
+      const mult = this.hlt < 15 ? 0.5 : 1
+      this.moo = clamp(this.moo + Math.round(dm * mult))
       this.aff = clamp(this.aff + da, 0, 300)
       this.save()
-      // Close modal after short delay, then react
       setTimeout(() => {
         this.closeGame()
         this.react(sprite, msgs, 2000)
       }, 1100)
+    },
+
+    // ── Sickness ──────────────────────────────────────────────────────────
+
+    checkSickness() {
+      const today = todayStr()
+      if (this.lastSickCheck === today) return
+      this.lastSickCheck = today
+
+      // 感冒時間到：自然痊癒但扣健康
+      if (this.sick && this.sickUntil && nowMs() >= this.sickUntil) {
+        this.sick         = false
+        this.sickUntil    = null
+        this.hlt          = clamp(this.hlt - 5)
+        this.react('sad', ['...好多了。', '昨天狀態很差。', '...算了。'], 2200)
+        return
+      }
+
+      if (this.sick) return   // 已生病，不重複觸發
+
+      // 根據健康值決定觸發機率
+      const chance = this.hlt >= 50 ? 0.05 : this.hlt >= 30 ? 0.15 : 0.35
+      if (Math.random() < chance) {
+        this.sick      = true
+        this.sickUntil = nowMs() + 24 * 60 * 60 * 1000
+        this.setMsg('...頭有點重。別吵我。')
+        this._sendNotif('sick', 'Toki 生病了 🤒', '他好像有點不舒服，去照顧他。', 1)
+      }
     },
 
     // ── Sleep ──────────────────────────────────────────────────────────────
@@ -373,17 +613,17 @@ export const usePetStore = defineStore('pet', {
 
       if (forced && type === 'nap') {
         const frac = Math.min(sleptMs / NAP_MS, 1)
-        this.eng = clamp(this.eng + 35 * frac)
         this.moo = clamp(this.moo - 12)
+        this.hlt = clamp(this.hlt + Math.round(8 * frac))
         this.react('disturbed', ['你幹嘛。我還沒睡夠。', '...煩。叫什麼叫。', '吵死了。'], 2200)
       } else if (type === 'nap') {
-        this.eng = clamp(this.eng + 35)
-        this.moo = clamp(this.moo + 5)
+        this.moo = clamp(this.moo + 15)
+        this.hlt = clamp(this.hlt + 8)
         this.react('energetic', ['...勉強起來了。', '嗯。好一點了。', '睡了才知道累。'], 2200)
       } else {
         const frac = Math.min(sleptMs / BED_MS, 1)
-        this.eng = clamp(this.eng + 100 * frac)
-        this.moo = clamp(this.moo + 8)
+        this.moo = clamp(this.moo + Math.round(20 * frac))
+        this.hlt = clamp(this.hlt + Math.round(15 * frac))
         this.sat = clamp(this.sat - 20)
         const hrs = sleptMs / 3600000
         if (frac >= 0.9) {
@@ -400,7 +640,7 @@ export const usePetStore = defineStore('pet', {
 
     tickSleep() {
       if (!this.sleeping) return
-      this._sleepNow = nowMs()   // 更新響應式時間戳，觸發 sleepRemaining 重算
+      this._sleepNow = nowMs()
       const rem = this.sleepRemaining
       this.setMsg(this.sleeping === 'nap'
         ? `...zz  剩 ${_fmtTime(rem)}`
@@ -408,63 +648,45 @@ export const usePetStore = defineStore('pet', {
       if (rem <= 0) this.wakeUp(false)
     },
 
-    // ── Notifications (JS→Swift bridge) ───────────────────────────────────
+    // ── Notifications ─────────────────────────────────────────────────────
 
-    // 前景：只有數值剛剛才跌破門檻時發一次（避免每 8 秒轟炸）
     checkNotifications() {
       if (this.sleeping) return
-
-      if (this.sat <= 0) this._sendNotif('sat_crit', 'Toki 餓壞了 🚨',     '「...我不餓。」（他在說謊）', 1)
-      if (this.eng <= 0) this._sendNotif('eng_crit', 'Toki 累到趴下了 💤', '「閉嘴，讓我睡。」體力歸零了。', 1)
-      if (this.moo <= 0) this._sendNotif('moo_crit', 'Toki 快爆發了 💢',   '「別管我。」他心情差到極點了。', 1)
-
+      if (this.sat <= 0)  this._sendNotif('sat_crit', 'Toki 餓壞了 🚨',     '「...我不餓。」（他在說謊）', 1)
+      if (this.hlt <= 0)  this._sendNotif('hlt_crit', 'Toki 健康亮紅燈 🆘', '他的狀態非常糟糕。', 1)
+      if (this.moo <= 0)  this._sendNotif('moo_crit', 'Toki 快爆發了 💢',   '「別管我。」他心情差到極點了。', 1)
+      if (this.isSick)    this._sendNotif('sick',     'Toki 生病了 🤒',     '他有點不舒服，去照顧他。')
       if (this.sat > 0 && this.sat < 20) this._sendNotif('sat_warn', 'Toki 餓了 🍜',       '他已經快餓壞了，快去餵他！')
-      if (this.eng > 0 && this.eng < 20) this._sendNotif('eng_warn', 'Toki 很累 😴',       '他快撐不住了，讓他休息一下。')
+      if (this.hlt > 0 && this.hlt < 20) this._sendNotif('hlt_warn', 'Toki 健康警告 💊',   '他身體狀況不太好，要照顧他。')
       if (this.moo > 0 && this.moo < 20) this._sendNotif('moo_warn', 'Toki 心情很差 😤',   '他在生悶氣，去陪他說說話。')
     },
 
-    // 背景：進入背景時一次算好所有未來時間點，交給 iOS 系統倒數
     scheduleBackgroundNotifications() {
       if (this.sleeping) {
-        // 睡眠中只排睡醒後的衰減，不發緊急通知
         _tokiBridge({ action: 'cancelAll' })
         return
       }
-
-      // 每秒衰減速率（8 秒 tick / 64 = 每秒）
       const nightMult = this.nightMode ? 2 : 1
       const DECAY = {
         sat: 1.0 / 64,
-        eng: (1.2 / 64) * nightMult,
-        moo: 0.6 / 64
+        moo: (0.6 / 64) * nightMult
       }
-
-      // 計算幾秒後會到門檻，最小 1 秒（iOS 不接受 delay <= 0）
       const secsUntil = (val, threshold, decay) =>
         decay <= 0 ? null : Math.max(1, Math.round((val - threshold) / decay))
 
       const jobs = []
-
-      // sat
       if (this.sat > 20) jobs.push({ id: 'sat_warn', title: 'Toki 餓了 🍜',       body: '他快餓壞了，快去餵他！',              delay: secsUntil(this.sat, 20, DECAY.sat) })
       if (this.sat > 0)  jobs.push({ id: 'sat_crit', title: 'Toki 餓壞了 🚨',     body: '「...我不餓。」（他在說謊）',          delay: secsUntil(this.sat, 0,  DECAY.sat) })
-
-      // eng
-      if (this.eng > 20) jobs.push({ id: 'eng_warn', title: 'Toki 很累 😴',       body: '他快撐不住了，讓他休息一下。',          delay: secsUntil(this.eng, 20, DECAY.eng) })
-      if (this.eng > 0)  jobs.push({ id: 'eng_crit', title: 'Toki 累到趴下了 💤', body: '「閉嘴，讓我睡。」體力歸零了。',        delay: secsUntil(this.eng, 0,  DECAY.eng) })
-
-      // moo
       if (this.moo > 20) jobs.push({ id: 'moo_warn', title: 'Toki 心情很差 😤',   body: '他在生悶氣，去陪他說說話。',            delay: secsUntil(this.moo, 20, DECAY.moo) })
       if (this.moo > 0)  jobs.push({ id: 'moo_crit', title: 'Toki 快爆發了 💢',   body: '「別管我。」他心情差到極點了。',        delay: secsUntil(this.moo, 0,  DECAY.moo) })
+      if (this.isSick)   jobs.push({ id: 'sick',     title: 'Toki 生病了 🤒',     body: '他有點不舒服，去照顧他。',              delay: 1 })
 
-      // 先取消舊的，再全部重排
       _tokiBridge({ action: 'cancelAll' })
       for (const j of jobs) {
         _tokiBridge({ action: 'schedule', id: j.id, title: j.title, body: j.body, delay: j.delay })
       }
     },
 
-    // App 回到前景：取消還沒發的背景排程，避免數值已回復還繼續發
     cancelBackgroundNotifications() {
       _tokiBridge({ action: 'cancelAll' })
       this._notifSent = {}
@@ -479,7 +701,7 @@ export const usePetStore = defineStore('pet', {
   }
 })
 
-// ── Utilities (module-level, shared) ──────────────────────────────────────
+// ── Utilities ──────────────────────────────────────────────────────────────
 
 export function _fmtTime(ms) {
   if (ms <= 0) return '00:00'

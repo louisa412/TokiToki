@@ -111,14 +111,15 @@ body::before {
   padding:8px 12px; display:flex; flex-direction:column; gap:6px;
 }
 .sr { display:flex; align-items:center; gap:7px; }
-.sl { font-family:'Press Start 2P',monospace; font-size:clamp(10px,2.8vw,12px); width:40px; text-align:right; color:var(--dim); flex-shrink:0; }
+.sl { font-family:'Press Start 2P',monospace; font-size:clamp(9px,2.4vw,11px); width:30px; text-align:center; color:var(--dim); flex-shrink:0; line-height:1.6; }
+.sl-txt { font-size:8px; }
 .bbg { flex:1; height:9px; background:var(--s2); border:1px solid var(--bd); overflow:hidden; }
 .bar { height:100%; transition:width .7s ease; }
 .bar::after { content:''; display:block; width:100%; height:100%; background:repeating-linear-gradient(90deg,transparent,transparent 5px,rgba(0,0,0,.18) 5px,rgba(0,0,0,.18) 6px); }
 .bar.sat { background:#e84040; box-shadow:0 0 4px rgba(232,64,64,.4); }
-.bar.eng { background:#4096e8; box-shadow:0 0 4px rgba(64,150,232,.4); }
+.bar.hlt { background:#50c878; box-shadow:0 0 4px rgba(80,200,120,.4); }
 .bar.moo { background:#a040e8; box-shadow:0 0 4px rgba(160,64,232,.4); }
-.bar.aff { background:#f5b942; box-shadow:0 0 4px rgba(245,185,66,.4); }
+.bar.aff { background:#4096e8; box-shadow:0 0 4px rgba(64,150,232,.4); }
 .bar.low { animation:pu .8s ease-in-out infinite; }
 @keyframes pu { 50%{opacity:.3} }
 .sn { font-family:'Press Start 2P',monospace; font-size:clamp(10px,2.8vw,12px); width:26px; color:var(--dim); flex-shrink:0; }
@@ -316,3 +317,124 @@ body::before {
   opacity:0; transition:opacity .3s; z-index:300;
 }
 .save-dot.flash { opacity:1; }
+/* ── New Foods ──────────────────────────────────────────── */
+.food-night { border-color: #4a3a6a !important; }
+.food-night .fn { color: #b08aff; }
+.night-hint {
+  grid-column: 1 / -1; text-align:center;
+  font-family:'Press Start 2P',monospace; font-size:9px;
+  color:var(--dim); padding:6px 0; line-height:1.9;
+}
+
+/* ── TypingGame ─────────────────────────────────────────── */
+.ty-word {
+  font-family:'Press Start 2P',monospace; font-size:clamp(16px,5vw,22px);
+  color:var(--gold); letter-spacing:4px; margin:10px 0 6px;
+}
+.ty-timer { font-family:'Press Start 2P',monospace; font-size:11px; color:var(--dim); margin-bottom:8px; }
+.ty-timer.danger { color:var(--red); animation:blink .5s infinite; }
+.ty-input {
+  width:90%; padding:8px 10px; background:var(--s2); border:1px solid var(--bd);
+  border-radius:2px; color:var(--txt); font-family:'Press Start 2P',monospace;
+  font-size:clamp(12px,4vw,15px); text-align:center; outline:none;
+}
+.ty-input:focus { border-color:var(--gold); }
+.ty-result { font-family:'Press Start 2P',monospace; font-size:10px; color:var(--grn); margin-top:8px; line-height:2; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── MemoryGame ─────────────────────────────────────────── */
+.mem-grid {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:8px auto;
+  max-width:240px;
+}
+.mem-card {
+  aspect-ratio:1; background:var(--s2); border:1px solid var(--bd);
+  border-radius:2px; cursor:pointer; font-size:0; transition:all .2s;
+  position:relative; overflow:hidden;
+}
+.mem-card .mem-front { font-size:22px; opacity:0; transition:opacity .2s; }
+.mem-card .mem-back  { font-family:'Press Start 2P',monospace; font-size:14px; color:var(--dim); position:absolute; inset:0; display:flex; align-items:center; justify-content:center; transition:opacity .2s; }
+.mem-card.flipped .mem-front { opacity:1; }
+.mem-card.flipped .mem-back  { opacity:0; }
+.mem-card.matched { border-color:var(--grn); background:rgba(80,200,120,.12); }
+.mem-card.wrong   { border-color:var(--red); background:rgba(232,64,64,.12); }
+
+/* ── QuizGame ───────────────────────────────────────────── */
+.quiz-q {
+  font-family:'Press Start 2P',monospace; font-size:clamp(9px,2.8vw,11px);
+  line-height:2.1; color:var(--txt); margin:6px 0 10px; border-left:2px solid var(--gold); padding-left:8px;
+}
+.quiz-comment {
+  font-family:'Press Start 2P',monospace; font-size:9px; color:var(--dim);
+  margin-top:8px; line-height:2; border-top:1px solid var(--bd); padding-top:6px;
+}
+.rap-choice.correct { border-color:var(--grn) !important; color:var(--grn) !important; }
+.rap-choice.wrong   { border-color:var(--red) !important; color:var(--red) !important; }
+
+/* ── DiceGame ───────────────────────────────────────────── */
+.dice-area { margin:8px auto; }
+.dice-face { font-size:52px; display:inline-block; transition:transform .05s; }
+.dice-face.rolling { animation:spin .08s linear infinite; }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.dice-score { font-family:'Press Start 2P',monospace; font-size:10px; color:var(--dim); margin:4px 0; }
+.dice-result { font-family:'Press Start 2P',monospace; font-size:10px; margin:6px 0; line-height:2; }
+.dice-result.win  { color:var(--grn); }
+.dice-result.lose { color:var(--red); }
+
+/* ── Sick Badge & Bar ──────────────────────────────────────────────────── */
+.sick-badge {
+  font-family:'Press Start 2P',monospace; font-size:10px;
+  color:#ff6b6b; border:1px solid #ff6b6b; border-radius:2px;
+  padding:3px 8px; margin-bottom:6px; text-align:center;
+  animation:blink .9s ease-in-out infinite;
+}
+.sick-bar { border-color:#ff6b6b !important; animation:blink .9s ease-in-out infinite; }
+
+/* ── Stats label update ────────────────────────────────────────────────── */
+.sl-txt { display:block; }
+
+/* ── Unlock section ────────────────────────────────────────────────────── */
+.unlock-section { margin-top:8px; border-top:1px solid var(--bd); padding-top:6px; }
+.unlock-label   {
+  font-family:'Press Start 2P',monospace; font-size:9px;
+  color:var(--dim); margin-bottom:6px; letter-spacing:1px;
+}
+.unlock-btn.locked     { opacity:.4; }
+.unlock-btn.nightlocked { opacity:.5; border-color:#4a3a6a !important; }
+.lock-hint {
+  font-size:8px; color:var(--dim); margin-top:2px;
+  font-family:'Press Start 2P',monospace;
+}
+
+/* ── Care Tab ──────────────────────────────────────────────────────────── */
+.care-list { display:flex; flex-direction:column; gap:2px; }
+.care-section-label {
+  font-family:'Press Start 2P',monospace; font-size:9px;
+  color:var(--dim); letter-spacing:1px; padding:2px 0;
+}
+.care-section-hint { color:#ff6b6b; margin-left:4px; }
+.care-grid  { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; }
+.care-btn {
+  background:var(--s2); border:1px solid var(--bd); border-radius:2px;
+  color:var(--txt); cursor:pointer; padding:7px 4px;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  transition:all .1s; width:100%; position:relative;
+}
+.care-btn:active:not(:disabled) { border-color:var(--grn); background:rgba(80,200,120,.1); transform:scale(.97); }
+.care-btn:disabled { opacity:.3; cursor:not-allowed; }
+.care-btn.care-unavail { opacity:.5; border-style:dashed; }
+.care-btn.care-oncd    { opacity:.55; }
+.care-btn.care-used    { opacity:.35; text-decoration:line-through; }
+.care-wide { grid-column:1 / -1; flex-direction:row; justify-content:center; gap:8px; padding:9px; }
+.ci { font-size:18px; }
+.cn { font-family:'Press Start 2P',monospace; font-size:clamp(8px,2.2vw,10px); line-height:1.6; text-align:center; }
+.cd-hint {
+  font-family:'Press Start 2P',monospace; font-size:8px; color:var(--dim);
+  position:absolute; bottom:3px; right:4px;
+}
+
+/* ── Health food tag ───────────────────────────────────────────────────── */
+.health-food-tag {
+  color:#50c878; font-size:8px;
+  font-family:'Press Start 2P',monospace;
+}
