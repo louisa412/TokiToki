@@ -2,8 +2,10 @@
   <div class="app">
     <!-- Header -->
     <div class="header">
-      <div>
-        <div class="title">T O K I T O K I</div>
+        <div class="header-main">
+         <div class="title-row">
+          <div class="title">T O K I T O K I</div>
+        </div>
         <div class="lv-badge">稱號：<span>{{ store.currentTitle }}</span></div>
       </div>
       <div class="hdr-r">
