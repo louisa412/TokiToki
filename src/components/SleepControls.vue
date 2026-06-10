@@ -1,55 +1,90 @@
 <template>
-  <div class="sleep-bar">
-    <!-- NAP -->
-    <button
-      class="sleep-btn nap-btn"
-      :class="{ 'wake-btn': store.sleeping === 'nap' }"
-      :disabled="store.sleeping === 'bed'"
-      @click="napClick"
-    >
-      <div class="sleep-ico">😪</div>
-      <div class="sleep-label">{{ napLabel }}</div>
-    </button>
+  <div class="sleep-controls" :class="{ duo: store.hasActiveVisitor }">
+    <div class="sleep-group">
+      <div v-if="store.hasActiveVisitor" class="sleep-name">Toki</div>
+      <div class="sleep-bar">
+        <button
+          class="sleep-btn nap-btn"
+          :class="{ 'wake-btn': store.sleeping === 'nap' }"
+          :disabled="store.reacting || store.sleeping === 'bed'"
+          @click="napClick('toki')"
+        >
+          <div class="sleep-ico">😪</div>
+          <div class="sleep-label">{{ napLabel('toki') }}</div>
+        </button>
 
-    <!-- BED -->
-    <button
-      class="sleep-btn bed-btn"
-      :class="{ 'wake-btn': store.sleeping === 'bed' }"
-      :disabled="store.sleeping === 'nap'"
-      @click="bedClick"
-    >
-      <div class="sleep-ico">🌙</div>
-      <div class="sleep-label">{{ bedLabel }}</div>
-    </button>
+        <button
+          class="sleep-btn bed-btn"
+          :class="{ 'wake-btn': store.sleeping === 'bed' }"
+          :disabled="store.reacting || store.sleeping === 'nap'"
+          @click="bedClick('toki')"
+        >
+          <div class="sleep-ico">🌙</div>
+          <div class="sleep-label">{{ bedLabel('toki') }}</div>
+        </button>
+      </div>
+    </div>
+
+    <div v-if="store.hasActiveVisitor" class="sleep-group">
+      <div class="sleep-name">Ichiro</div>
+      <div class="sleep-bar">
+        <button
+          class="sleep-btn nap-btn"
+          :class="{ 'wake-btn': store.sleepingIchiro === 'nap' }"
+          :disabled="store.reacting || store.sleepingIchiro === 'bed'"
+          @click="napClick('ichiro')"
+        >
+          <div class="sleep-ico">😪</div>
+          <div class="sleep-label">{{ napLabel('ichiro') }}</div>
+        </button>
+
+        <button
+          class="sleep-btn bed-btn"
+          :class="{ 'wake-btn': store.sleepingIchiro === 'bed' }"
+          :disabled="store.reacting || store.sleepingIchiro === 'nap'"
+          @click="bedClick('ichiro')"
+        >
+          <div class="sleep-ico">🌙</div>
+          <div class="sleep-label">{{ bedLabel('ichiro') }}</div>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { usePetStore } from '../stores/pet'
 import { _fmtTime } from '../stores/pet'
 
 const store = usePetStore()
 
-const napLabel = computed(() => {
-  if (store.sleeping === 'nap') return '叫醒他 ' + _fmtTime(store.sleepRemaining)
-  return '10 分鐘'
-})
-
-const bedLabel = computed(() => {
-  if (store.sleeping === 'bed') {
-    return store.sleepRemaining > 0 ? '剩 ' + _fmtTime(store.sleepRemaining) : '叫醒他'
-  }
-  return '8 小時'
-})
-
-function napClick() {
-  if (store.sleeping === 'nap') store.wakeUp(true)
-  else store.doSleep('nap')
+function sleepType(target) {
+  return target === 'ichiro' ? store.sleepingIchiro : store.sleeping
 }
 
-function bedClick() {
-  if (store.sleeping === 'bed') store.wakeUp(false)
-  else store.doSleep('bed')
+function sleepRemaining(target) {
+  return target === 'ichiro' ? store.sleepRemainingIchiro : store.sleepRemaining
+}
+
+function napLabel(target) {
+  if (sleepType(target) === 'nap') return '叫醒 ' + _fmtTime(sleepRemaining(target))
+  return '小睡 10 分'
+}
+
+function bedLabel(target) {
+  if (sleepType(target) === 'bed') {
+    return sleepRemaining(target) > 0 ? '剩 ' + _fmtTime(sleepRemaining(target)) : '叫醒'
+  }
+  return '睡 8 小時'
+}
+
+function napClick(target) {
+  if (sleepType(target) === 'nap') store.wakeUp(true, target)
+  else store.doSleep('nap', target)
+}
+
+function bedClick(target) {
+  if (sleepType(target) === 'bed') store.wakeUp(false, target)
+  else store.doSleep('bed', target)
 }
 </script>

@@ -1,3 +1,19 @@
 node_modules
 dist
 .DS_Store
+
+# local/test build output
+dist-test/
+
+# accidental duplicate Capacitor/iOS files
+ios/App/App/config 2.xml
+ios/App/App/config 3.xml
+ios/App/App/config 4.xml
+ios/App/App/config 5.xml
+ios/App/App/config 6.xml
+ios/App/App/config 7.xml
+ios/App/App/config 8.xml
+ios/capacitor-cordova-ios-plugins 2/
+
+# accidental misplaced duplicate Swift file
+ios/App/TokiNotificationHandler.swift

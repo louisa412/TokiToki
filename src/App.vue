@@ -11,6 +11,7 @@
       <div class="hdr-r">
         <div class="clock">{{ clock }}</div>
         <div class="night-txt">{{ store.nightMode ? '🌙 深夜模式' : '' }}</div>
+        <BgmPlayer />
         <div class="save-dot" :class="{ flash: savePulse }" title="已存檔"></div>
       </div>
     </div>
@@ -18,14 +19,18 @@
     <!-- Character -->
     <TokiSprite />
 
-    <!-- Stats -->
-    <StatsPanel />
+    <div class="lower-scroll">
+      <!-- Stats -->
+      <StatsPanel />
 
-    <!-- Sleep controls -->
-    <SleepControls />
+      <div class="action-scroll">
+        <!-- Sleep controls -->
+        <SleepControls />
 
-    <!-- Tabbed actions -->
-    <ActionPanel @toast="showToast" />
+        <!-- Tabbed actions -->
+        <ActionPanel @toast="showToast" />
+      </div>
+    </div>
 
     <!-- Mini-game modal -->
     <GameModal />
@@ -53,6 +58,7 @@ import ActionPanel from './components/ActionPanel.vue'
 import GameModal     from './components/GameModal.vue'
 import CheckupModal  from './components/CheckupModal.vue'
 import SplashScreen  from './components/SplashScreen.vue'
+import BgmPlayer     from './components/BgmPlayer.vue'
 
 const store = usePetStore()
 
@@ -117,7 +123,7 @@ onMounted(() => {
   // 1s clock + sleep countdown
   clockId = setInterval(() => {
     updateClock()
-    if (store.isSleeping) store.tickSleep()
+    if (store.isSleeping || store.isIchiroSleeping) store.tickSleep()
   }, 1000)
 
   // 30s autosave

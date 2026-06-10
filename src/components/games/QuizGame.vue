@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="gp">第{{ qIdx + 1 }}/{{ questions.length }}題</div>
-    <div class="quiz-q">{{ q.question }}</div>
+    <div class="quiz-q">{{ displayQuestion }}</div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
       <button
-        v-for="(opt, i) in q.options"
+        v-for="(opt, i) in displayOptions"
         :key="i"
         class="rap-choice"
         :class="answerClass(i)"
@@ -19,8 +19,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { usePetStore } from '../../stores/pet'
+import { gameMsgs, isIchiroGame } from './gameTarget'
 
 const store = usePetStore()
+const ichiroMode = isIchiroGame(store)
 
 const questions = [
   {
@@ -62,10 +64,22 @@ const picked  = ref(-1)
 const comment = ref('')
 
 const q = computed(() => questions[qIdx.value])
+const displayQuestion = computed(() => {
+  if (!ichiroMode || q.value.question !== 'Toki 最討厭什麼？') return q.value.question
+  return 'Ichiro 比較擅長什麼？'
+})
+const displayOptions = computed(() => {
+  if (!ichiroMode || q.value.question !== 'Toki 最討厭什麼？') return q.value.options
+  return ['安靜整理', '突然大吵', '亂丟東西', '惡作劇']
+})
+const answerIndex = computed(() => {
+  if (!ichiroMode || q.value.question !== 'Toki 最討厭什麼？') return q.value.answer
+  return 0
+})
 
 function answerClass(i) {
   if (!answered.value) return ''
-  if (i === q.value.answer) return 'correct'
+  if (i === answerIndex.value) return 'correct'
   if (i === picked.value)   return 'wrong'
   return ''
 }
@@ -74,9 +88,11 @@ function pick(i) {
   if (answered.value) return
   answered.value = true
   picked.value = i
-  const correct = i === q.value.answer
+  const correct = i === answerIndex.value
   if (correct) score.value++
-  comment.value = correct ? q.value.ok : q.value.wrong
+  comment.value = ichiroMode && q.value.question === 'Toki 最討厭什麼？'
+    ? (correct ? 'Ichiro：嗯，我比較喜歡安靜地完成事情。' : 'Ichiro：這題有點難呢。')
+    : (correct ? q.value.ok : q.value.wrong)
 
   setTimeout(() => {
     if (qIdx.value < questions.length - 1) {
@@ -90,10 +106,17 @@ function pick(i) {
       const good    = s >= 3
       store.endGame(
         perfect ? 'praised' : good ? 'energetic' : 'sad',
-        [
-          perfect ? `全對。${s}/${questions.length}。你合格了。` : `${s}/${questions.length}。`,
-          perfect ? '...知道我的事還蠻多的。' : good ? '勉強及格。' : '多了解一下我。',
-        ],
+        gameMsgs(
+          store,
+          [
+            perfect ? `全對。${s}/${questions.length}。你合格了。` : `${s}/${questions.length}。`,
+            perfect ? '...知道我的事還蠻多的。' : good ? '勉強及格。' : '多了解一下我。',
+          ],
+          [
+            perfect ? `全對。${s}/${questions.length}。很厲害。` : `${s}/${questions.length}。`,
+            perfect ? 'Ichiro：你記得好多。' : good ? 'Ichiro：答得不錯。' : 'Ichiro：下次一起再看一次。',
+          ]
+        ),
         perfect ? 20 : good ? 10 : 3,
         -5,
         perfect ? 15 : good ? 8 : 2

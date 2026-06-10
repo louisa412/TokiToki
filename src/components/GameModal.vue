@@ -24,17 +24,22 @@ const store = usePetStore()
 // Lazy-load each game component
 const GAME_COMPONENTS = {
   rps:    defineAsyncComponent(() => import('./games/RpsGame.vue')),
-  stare:  defineAsyncComponent(() => import('./games/StareGame.vue')),
-  rap:    defineAsyncComponent(() => import('./games/RapGame.vue')),
-  coin:   defineAsyncComponent(() => import('./games/CoinGame.vue')),
   shoot:  defineAsyncComponent(() => import('./games/ShootGame.vue')),
-  polish: defineAsyncComponent(() => import('./games/PolishGame.vue')),
   walk:   defineAsyncComponent(() => import('./games/WalkGame.vue')),
   listen: defineAsyncComponent(() => import('./games/ListenGame.vue')),
   typing: defineAsyncComponent(() => import('./games/TypingGame.vue')),
   memory: defineAsyncComponent(() => import('./games/MemoryGame.vue')),
   quiz:   defineAsyncComponent(() => import('./games/QuizGame.vue')),
-  dice:   defineAsyncComponent(() => import('./games/DiceGame.vue'))
+  fishing: defineAsyncComponent(() => import('./games/FishingGame.vue')),
+  warehouse: defineAsyncComponent(() => import('./games/WarehouseGame.vue')),
+  subway: defineAsyncComponent(() => import('./games/SubwayGame.vue')),
+  photo: defineAsyncComponent(() => import('./games/PhotoGame.vue')),
+  number_chain: defineAsyncComponent(() => import('./games/NumberChainGame.vue')),
+  solitaire: defineAsyncComponent(() => import('./games/SolitaireGame.vue')),
+  bubble: defineAsyncComponent(() => import('./games/BubbleGame.vue')),
+  catcher: defineAsyncComponent(() => import('./games/CatcherGame.vue')),
+  snake: defineAsyncComponent(() => import('./games/SnakeLiteGame.vue')),
+  dodge: defineAsyncComponent(() => import('./games/DodgeGame.vue'))
 }
 
 const currentGame = computed(() =>
@@ -43,7 +48,8 @@ const currentGame = computed(() =>
 
 const gameTitle = computed(() => {
   const g = GAMES.find(g => g.id === store.activeGameId)
-  return g ? `${g.ico} ${g.name}` : ''
+  const target = store.activeGameTarget === 'ichiro' ? 'Ichiro' : 'Toki'
+  return g ? `${g.ico} ${target}：${g.name}` : ''
 })
 
 function tryClose() {

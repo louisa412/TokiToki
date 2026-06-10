@@ -25,6 +25,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { usePetStore } from '../../stores/pet'
+import { gameMsgs } from './gameTarget'
 
 const store = usePetStore()
 
@@ -61,7 +62,11 @@ function flip(i) {
         const perfect = moves.value <= EMOJIS.length + 2
         store.endGame(
           'happy',
-          [perfect ? '記憶力還行。' : '...總算配完了。', '沒想到你記得住。', perfect ? '不錯。' : '步數太多了。'],
+          gameMsgs(
+            store,
+            [perfect ? '記憶力還行。' : '...總算配完了。', '沒想到你記得住。', perfect ? '不錯。' : '步數太多了。'],
+            [perfect ? 'Ichiro：記得很清楚，好厲害。' : 'Ichiro：配完了，辛苦了。', perfect ? '這局很順。' : '步數多了一點，但完成了。']
+          ),
           perfect ? 18 : 10, -8, perfect ? 12 : 6
         )
       }

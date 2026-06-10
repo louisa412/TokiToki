@@ -21,6 +21,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { usePetStore } from '../../stores/pet'
+import { gameMsgs } from './gameTarget'
 
 const store    = usePetStore()
 const TOTAL    = 6
@@ -80,7 +81,11 @@ function finish() {
   const h = hits.value
   store.endGame(
     h >= TOTAL * 0.7 ? 'energetic' : 'sad',
-    h >= TOTAL * 0.7 ? ['...射術不差。', '哼。還行。'] : h >= TOTAL * 0.4 ? ['差不多吧。'] : ['...什麼命中率。'],
+    h >= TOTAL * 0.7
+      ? gameMsgs(store, ['...射術不差。', '哼。還行。'], ['Ichiro：命中率很好。', '剛剛很專心。'])
+      : h >= TOTAL * 0.4
+        ? gameMsgs(store, ['差不多吧。'], ['Ichiro：差一點就更好了。'])
+        : gameMsgs(store, ['...什麼命中率。'], ['Ichiro：沒關係，下一次會更好。']),
     h >= TOTAL * 0.7 ? 25 : h >= TOTAL * 0.4 ? 15 : 8,
     -20,
     h >= TOTAL * 0.7 ? 10 : 6

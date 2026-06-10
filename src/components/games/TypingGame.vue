@@ -22,6 +22,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { usePetStore } from '../../stores/pet'
+import { gameLine, gameMsgs } from './gameTarget'
 
 const store = usePetStore()
 
@@ -48,8 +49,8 @@ onMounted(() => {
     if (timeLeft.value <= 0) {
       clearInterval(timer)
       done.value = true
-      resultMsg.value = '時間到了。慢。'
-      store.endGame('sad', ['打這麼慢？', '...廢。', '下次快一點。'], 5, -8, 2)
+      resultMsg.value = gameLine(store, '時間到了。慢。', '時間到了。Ichiro：差一點。')
+      store.endGame('sad', gameMsgs(store, ['打這麼慢？', '...廢。', '下次快一點。'], ['Ichiro：沒關係。', '下次一起再練。']), 5, -8, 2)
     }
   }, 1000)
 })
@@ -62,10 +63,16 @@ function checkTyped() {
     clearInterval(timer)
     done.value = true
     const bonus = timeLeft.value >= 4
-    resultMsg.value = bonus ? '速度不錯。這次承認你。' : '...勉強及格。'
+    resultMsg.value = bonus
+      ? gameLine(store, '速度不錯。這次承認你。', 'Ichiro：速度很快。')
+      : gameLine(store, '...勉強及格。', 'Ichiro：剛好趕上了。')
     const dm = bonus ? 15 : 8
     const da = bonus ? 10 : 5
-    store.endGame('praised', [bonus ? '速度可以。' : '...還行。', '比我想的快一點。', '勉強過了。'], dm, -5, da)
+    store.endGame(
+      'praised',
+      gameMsgs(store, [bonus ? '速度可以。' : '...還行。', '比我想的快一點。', '勉強過了。'], [bonus ? 'Ichiro：打得很快。' : 'Ichiro：有趕上。', '看你這樣很安心。']),
+      dm, -5, da
+    )
   }
 }
 </script>
