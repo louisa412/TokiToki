@@ -671,6 +671,21 @@ body::before {
 }
 .friend-toggle:active:not(:disabled) { transform:scale(.96); background:rgba(255,122,168,.16); }
 .friend-toggle:disabled { opacity:.35; cursor:not-allowed; }
+.visitor-picker {
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.visitor-btn {
+  flex:1; min-width:70px; max-width:110px;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  background:var(--s2); border:1px solid var(--bd); border-radius:2px;
+  padding:8px 6px; cursor:pointer; transition:border-color .15s;
+}
+.visitor-btn:hover:not(:disabled) { border-color:rgba(255,122,168,.6); }
+.visitor-btn:disabled { opacity:.35; cursor:not-allowed; }
+.visitor-av { width:48px; height:48px; image-rendering:pixelated; }
+.visitor-btn-name { font-family:'Press Start 2P',monospace; font-size:8px; color:#ff9abb; }
+.visitor-rel { font-size:8px; color:var(--dim); }
+.visitor-unlock-area { display:flex; justify-content:center; padding:12px 0; }
 .relationship-card {
   background:rgba(255,122,168,.05); border:1px solid rgba(255,122,168,.28);
   border-radius:2px; padding:8px; display:flex; flex-direction:column; gap:5px;

@@ -23,12 +23,12 @@
           <img
             class="sprite visitor-sprite vis"
             :src="visitorSpriteSrc"
-            alt="Ichiro"
-            @error="onError"
+            :alt="store.activeVisitorName"
+            @error="onVisitorError"
             @click="onVisitorClick"
           />
-          <div class="name-tag">Ichiro</div>
-          <div class="zzz ichiro-zzz" :class="{ on: store.isIchiroSleeping }">z<br>z<br>z</div>
+          <div class="name-tag">{{ store.activeVisitorName }}</div>
+          <div class="zzz ichiro-zzz" :class="{ on: store.isVisitorSleeping }">z<br>z<br>z</div>
         </div>
       </Transition>
       <div v-if="store.pairEffect === 'hearts'" class="heart-bubbles">♡ ♡ ♡</div>
@@ -87,11 +87,12 @@ const spriteSrc = computed(() => {
 })
 
 const visitorSpriteSrc = computed(() => {
-  if (store.isIchiroSleeping) return `${import.meta.env.BASE_URL}images/ichiro/sleeping.png`
-  if (store.ichiroShowsSick && !store.reacting) return `${import.meta.env.BASE_URL}images/ichiro/sick.png`
+  const vid = store.activeVisitor || 'ichiro'
+  if (store.isVisitorSleeping) return `${import.meta.env.BASE_URL}images/${vid}/sleeping.png`
+  if (store.visitorShowsSick && !store.reacting) return `${import.meta.env.BASE_URL}images/${vid}/sick.png`
   const rawName = SPRITE_NAMES.has(store.visitorSprite) ? store.visitorSprite : 'happy'
   const name = normalizeSpriteName(rawName)
-  return `${import.meta.env.BASE_URL}images/ichiro/${name}.png`
+  return `${import.meta.env.BASE_URL}images/${vid}/${name}.png`
 })
 
 // Bounce on sprite change
@@ -111,17 +112,22 @@ function onLoad(e) {
 
 function onError(e) {
   const char = store.selectedCharacter || 'toki'
-  if (e.target.src.includes(`/images/${char}/`)) {
+  if (!e.target.src.includes(`/images/${char}/happy.png`)) {
     e.target.src = `${import.meta.env.BASE_URL}images/${char}/happy.png`
     return
   }
-  if (e.target.src.includes('/images/ichiro/')) {
-    e.target.src = `${import.meta.env.BASE_URL}images/ichiro/happy.png`
+  console.warn('Sprite not found:', e.target.src)
+  e.target.style.opacity = '0.2'
+}
+
+function onVisitorError(e) {
+  const vid = store.activeVisitor || 'ichiro'
+  if (!e.target.src.includes(`/images/${vid}/happy.png`)) {
+    e.target.src = `${import.meta.env.BASE_URL}images/${vid}/happy.png`
     return
   }
-  // 圖片載入失敗時顯示佔位，方便 debug
-  console.warn('Sprite not found:', e.target.src)
-  e.target.style.opacity = '0.2'  // 讓圖片區域可見（灰色佔位）
+  console.warn('Visitor sprite not found:', e.target.src)
+  e.target.style.opacity = '0.2'
 }
 
 function onSpriteClick() {

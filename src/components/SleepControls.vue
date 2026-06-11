@@ -26,26 +26,26 @@
     </div>
 
     <div v-if="store.hasActiveVisitor" class="sleep-group">
-      <div class="sleep-name">Ichiro</div>
+      <div class="sleep-name">{{ store.activeVisitorName }}</div>
       <div class="sleep-bar">
         <button
           class="sleep-btn nap-btn"
-          :class="{ 'wake-btn': store.sleepingIchiro === 'nap' }"
-          :disabled="store.reacting || store.sleepingIchiro === 'bed'"
-          @click="napClick('ichiro')"
+          :class="{ 'wake-btn': store.visitorSleeping === 'nap' }"
+          :disabled="store.reacting || store.visitorSleeping === 'bed'"
+          @click="napClick(store.activeVisitor)"
         >
           <div class="sleep-ico">😪</div>
-          <div class="sleep-label">{{ napLabel('ichiro') }}</div>
+          <div class="sleep-label">{{ napLabel('visitor') }}</div>
         </button>
 
         <button
           class="sleep-btn bed-btn"
-          :class="{ 'wake-btn': store.sleepingIchiro === 'bed' }"
-          :disabled="store.reacting || store.sleepingIchiro === 'nap'"
-          @click="bedClick('ichiro')"
+          :class="{ 'wake-btn': store.visitorSleeping === 'bed' }"
+          :disabled="store.reacting || store.visitorSleeping === 'nap'"
+          @click="bedClick(store.activeVisitor)"
         >
           <div class="sleep-ico">🌙</div>
-          <div class="sleep-label">{{ bedLabel('ichiro') }}</div>
+          <div class="sleep-label">{{ bedLabel('visitor') }}</div>
         </button>
       </div>
     </div>
@@ -59,11 +59,11 @@ import { _fmtTime } from '../stores/pet'
 const store = usePetStore()
 
 function sleepType(target) {
-  return target === 'ichiro' ? store.sleepingIchiro : store.sleeping
+  return target === 'visitor' ? store.visitorSleeping : store.sleeping
 }
 
 function sleepRemaining(target) {
-  return target === 'ichiro' ? store.sleepRemainingIchiro : store.sleepRemaining
+  return target === 'visitor' ? store.sleepRemainingVisitor : store.sleepRemaining
 }
 
 function napLabel(target) {

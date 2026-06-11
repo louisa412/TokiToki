@@ -46,7 +46,7 @@
           </div>
         </div>
         <div class="duo-stat-card">
-          <div class="duo-stat-name">Ichiro</div>
+          <div class="duo-stat-name">{{ store.activeVisitorName }}</div>
           <div class="duo-sr" v-for="s in ichiroRows" :key="s.id">
             <span class="duo-sl">
               <span class="duo-ico">{{ s.ico }}</span>
@@ -65,13 +65,13 @@
       </div>
       <div class="relationship-strip">
         <span class="relationship-info">
-          <span class="relationship-pair">💞 {{ store.tokiName }} × Ichiro</span>
+          <span class="relationship-pair">💞 {{ store.tokiName }} × {{ store.activeVisitorName }}</span>
           <span class="relationship-title">{{ store.relationshipTitle }}</span>
         </span>
         <div class="bbg">
           <div class="bar rel" :style="{ width: relationshipPct + '%' }"></div>
         </div>
-        <strong>{{ Math.round(store.relationshipTokiIchiro) }}</strong>
+        <strong>{{ Math.round(store.currentRelationship) }}</strong>
       </div>
     </template>
   </div>
@@ -96,16 +96,16 @@ const tokiRows = computed(() => [
 ])
 
 const ichiroRows = computed(() => [
-  { id: 'satIchiro', ico: '🍖', label: '飽食', colorClass: 'sat', value: Math.round(store.satIchiro), pct: Math.round(store.satIchiro) },
-  { id: 'hltIchiro', ico: '💊', label: '健康', colorClass: 'hlt', value: Math.round(store.hltIchiro), pct: Math.round(store.hltIchiro) },
-  { id: 'staIchiro', ico: '⚡', label: '體力', colorClass: 'sta', value: Math.round(store.staIchiro), pct: Math.round(store.staIchiro) },
-  { id: 'mooIchiro', ico: '💢', label: '心情', colorClass: 'moo', value: Math.round(store.mooIchiro), pct: Math.round(store.mooIchiro) },
+  { id: 'vSat', ico: '🍖', label: '飽食', colorClass: 'sat', value: Math.round(store.visitorSat), pct: Math.round(store.visitorSat) },
+  { id: 'vHlt', ico: '💊', label: '健康', colorClass: 'hlt', value: Math.round(store.visitorHlt), pct: Math.round(store.visitorHlt) },
+  { id: 'vSta', ico: '⚡', label: '體力', colorClass: 'sta', value: Math.round(store.visitorSta), pct: Math.round(store.visitorSta) },
+  { id: 'vMoo', ico: '💢', label: '心情', colorClass: 'moo', value: Math.round(store.visitorMoo), pct: Math.round(store.visitorMoo) },
   {
-    id: 'affIchiro', ico: '💙', label: '好感', colorClass: 'aff',
-    value: Math.round(store.playerAffinityIchiro),
-    pct: Math.min(Math.round(store.playerAffinityIchiro / 3), 100)
+    id: 'vAff', ico: '💙', label: '好感', colorClass: 'aff',
+    value: Math.round(store.visitorAff),
+    pct: Math.min(Math.round(store.visitorAff / 3), 100)
   }
 ])
 
-const relationshipPct = computed(() => Math.min(Math.round(store.relationshipTokiIchiro / 3), 100))
+const relationshipPct = computed(() => Math.min(Math.round(store.currentRelationship / 3), 100))
 </script>

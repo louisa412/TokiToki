@@ -63,7 +63,7 @@ const activeTarget = ref('toki')
 
 const targets = computed(() => [
   { id: 'toki', label: store.tokiName },
-  { id: 'ichiro', label: 'Ichiro', needsVisitor: true },
+  { id: 'ichiro', label: store.activeVisitorName || 'Ichiro', needsVisitor: true },
   { id: 'duo', label: '雙人', needsVisitor: true }
 ])
 

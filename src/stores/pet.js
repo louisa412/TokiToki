@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
-import { getCharacterName } from '../data/characters'
+import { getCharacterName, CHARACTERS } from '../data/characters'
+
+function pairKey(a, b) { return [a, b].sort().join('-') }
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -49,13 +51,13 @@ export const FOODS = [
   },
   // ── 雙角色食物（Ichiro 來訪時限定）────────────────────────────────────
   { id: 'cake_duo', ico: '🍰', name: '蛋糕', sat: 18, hlt: -3, moo: 12, rel: 10, tokiAff: 6, ichiroAff: 8, duoOnly: true, sp: 'happy',
-    msgs: ['Ichiro：甜的很適合一起吃。', 'Toki：...你切太大塊了。', '兩個人把蛋糕分完了。']
+    msgs: ['Ichiro：甜的很適合一起吃。', '{name}：...你切太大塊了。', '兩個人把蛋糕分完了。']
   },
   { id: 'steak_duo', ico: '🥩', name: '牛排', sat: 35, hlt: 2, moo: 10, rel: 14, tokiAff: 8, ichiroAff: 8, duoOnly: true, sp: 'energetic',
-    msgs: ['Toki：這個可以很好吃。', 'Ichiro：你喜歡五分熟？', '兩個人一起吃得很滿足。']
+    msgs: ['{name}：這個可以很好吃。', 'Ichiro：你喜歡五分熟？', '兩個人一起吃得很滿足。']
   },
   { id: 'tea_duo', ico: '🫖', name: '雙人下午茶', sat: 16, hlt: 6, moo: 18, rel: 18, tokiAff: 10, ichiroAff: 12, duoOnly: true, sp: 'heart',
-    msgs: ['Ichiro：想跟你慢慢聊天。', 'Toki：...別一直看我。', '茶香讓客廳變得柔和了一點。']
+    msgs: ['Ichiro：想跟你慢慢聊天。', '{name}：...別一直看我。', '茶香讓客廳變得柔和了一點。']
   }
 ]
 
@@ -127,22 +129,22 @@ export const UNLOCK_ACTIONS = [
 
 export const DUO_ACTIONS = [
   { id: 'snack', ico: '🍪', name: '一起吃點心', minRel: 0, tokiAff: 6, ichiroAff: 6, rel: 8, sat: 8, moo: 8,
-    msgs: ['Toki：...你不要搶最後一塊。', 'Ichiro：那就一人一半吧。', '兩個人分著吃，氣氛變好了。']
+    msgs: ['{name}：...你不要搶最後一塊。', 'Ichiro：那就一人一半吧。', '兩個人分著吃，氣氛變好了。']
   },
   { id: 'chat', ico: '💬', name: '一起聊天', minRel: 25, tokiAff: 8, ichiroAff: 10, rel: 12, moo: 14,
-    msgs: ['Ichiro：原來 Toki 是這樣想的。', 'Toki：我才沒說那麼多。', '你陪他們聊了一會兒。']
+    msgs: ['Ichiro：原來你是這樣想的。', '{name}：我才沒說那麼多。', '你陪他們聊了一會兒。']
   },
   { id: 'mini_game', ico: '🎮', name: '一起玩小遊戲', minRel: 60, tokiAff: 12, ichiroAff: 12, rel: 16, moo: 18, sta: -10,
-    msgs: ['Toki：再一局。', 'Ichiro：剛剛配合得很好。', '三個人玩得有點忘記時間。']
+    msgs: ['{name}：再一局。', 'Ichiro：剛剛配合得很好。', '三個人玩得有點忘記時間。']
   }
 ]
 
 export const DUO_CARE_ACTIONS = [
   { id: 'rest_together', ico: '🛋', name: '一起休息', minRel: 0, tokiAff: 4, ichiroAff: 4, rel: 8, hlt: 6, sta: 12, moo: 8,
-    msgs: ['Ichiro：一起休息一下吧。', 'Toki：...也不是不行。', '兩個人安靜地恢復了一點精神。']
+    msgs: ['Ichiro：一起休息一下吧。', '{name}：...也不是不行。', '兩個人安靜地恢復了一點精神。']
   },
   { id: 'check_each_other', ico: '🩺', name: '互相照看', minRel: 30, tokiAff: 6, ichiroAff: 8, rel: 12, hlt: 10, sta: 6, moo: 6,
-    msgs: ['Ichiro：Toki，額頭好像不燙了。', 'Toki：你也別逞強。', '兩個人互相確認了狀態。']
+    msgs: ['Ichiro：你額頭好像不燙了。', '{name}：你也別逞強。', '兩個人互相確認了狀態。']
   }
 ]
 
@@ -161,19 +163,19 @@ export const REL_TITLES = [
 export const ICHIRO_FOOD_PREFS = {
   porridge: {
     moo: 22, aff: 12, sprite: 'heart',
-    msgs: ['Ichiro：草莓粥？我很喜歡。', 'Ichiro：甜甜的，很溫柔。', 'Toki：...你真的喜歡這個？']
+    msgs: ['Ichiro：草莓粥？我很喜歡。', 'Ichiro：甜甜的，很溫柔。', '{name}：...你真的喜歡這個？']
   },
   chicken: {
     moo: 16, aff: 8, sprite: 'happy',
-    msgs: ['Ichiro：水煮雞胸肉很清爽。', 'Ichiro：謝謝，這個剛剛好。', 'Toki：你也太健康了。']
+    msgs: ['Ichiro：水煮雞胸肉很清爽。', 'Ichiro：謝謝，這個剛剛好。', '{name}：你也太健康了。']
   },
   coffee: {
     moo: -5, aff: 0, sprite: 'helpless',
-    msgs: ['Ichiro：黑咖啡有點太苦了。', 'Ichiro：我可能還不太習慣。', 'Toki：這才是咖啡。']
+    msgs: ['Ichiro：黑咖啡有點太苦了。', 'Ichiro：我可能還不太習慣。', '{name}：這才是咖啡。']
   },
   cig: {
     moo: -20, aff: -8, sprite: 'angry',
-    msgs: ['Ichiro：這個我不喜歡。', 'Ichiro：味道太奇怪了。', 'Toki：...不懂欣賞。']
+    msgs: ['Ichiro：這個我不喜歡。', 'Ichiro：味道太奇怪了。', '{name}：...不懂欣賞。']
   }
 }
 
@@ -284,7 +286,7 @@ export const usePetStore = defineStore('pet', {
     aff: 50,
     playerAffinityToki: 50,
     playerAffinityIchiro: 0,
-    relationshipTokiIchiro: 0,
+    relationships: {},
     satIchiro: 72,
     hltIchiro: 72,
     mooIchiro: 68,
@@ -330,6 +332,7 @@ export const usePetStore = defineStore('pet', {
     sleepEndIchiro: null,
     sleepStartIchiro: null,
     _sleepNowIchiro: 0,
+    _sleepNowVisitor: 0,
 
     // Sickness
     sick: false,
@@ -362,27 +365,95 @@ export const usePetStore = defineStore('pet', {
       }
       return title
     },
-    hasActiveVisitor: (state) => state.activeVisitor === 'ichiro',
-    activeVisitorName: (state) => state.activeVisitor === 'ichiro' ? 'Ichiro' : '',
+    hasActiveVisitor: (state) => state.activeVisitor !== null,
+    activeVisitorName: (state) => {
+      if (!state.activeVisitor) return ''
+      if (state.activeVisitor === 'ichiro') return 'Ichiro'
+      return getCharacterName(state.activeVisitor)
+    },
     tokiName: (state) => getCharacterName(state.selectedCharacter),
+    currentRelationship: (state) => {
+      if (!state.activeVisitor) return 0
+      const key = pairKey(state.selectedCharacter, state.activeVisitor)
+      return state.relationships[key] ?? 0
+    },
+    relationshipTokiIchiro: (state) => state.relationships[pairKey('toki', 'ichiro')] ?? 0,
     relationshipTitle: (state) => {
       let title = REL_TITLES[0][1]
+      const rel = state.activeVisitor
+        ? (state.relationships[pairKey(state.selectedCharacter, state.activeVisitor)] ?? 0)
+        : 0
       for (const [threshold, name] of REL_TITLES) {
-        if (state.relationshipTokiIchiro >= threshold) title = name
+        if (rel >= threshold) title = name
       }
       return title
     },
     isDisturbed:    (state) => nowMs() < state.disturbedUntil,
     isSleeping:     (state) => !!state.sleeping,
     isIchiroSleeping: (state) => !!state.sleepingIchiro,
+    isVisitorSleeping: (state) => {
+      if (!state.activeVisitor) return false
+      if (state.activeVisitor === 'ichiro') return !!state.sleepingIchiro
+      return !!(state.charactersState[state.activeVisitor]?.sleeping)
+    },
+    visitorSleeping: (state) => {
+      if (!state.activeVisitor) return null
+      if (state.activeVisitor === 'ichiro') return state.sleepingIchiro
+      return state.charactersState[state.activeVisitor]?.sleeping ?? null
+    },
+    visitorSat: (state) => {
+      if (!state.activeVisitor) return 0
+      if (state.activeVisitor === 'ichiro') return state.satIchiro
+      return state.charactersState[state.activeVisitor]?.sat ?? 0
+    },
+    visitorHlt: (state) => {
+      if (!state.activeVisitor) return 0
+      if (state.activeVisitor === 'ichiro') return state.hltIchiro
+      return state.charactersState[state.activeVisitor]?.hlt ?? 0
+    },
+    visitorMoo: (state) => {
+      if (!state.activeVisitor) return 0
+      if (state.activeVisitor === 'ichiro') return state.mooIchiro
+      return state.charactersState[state.activeVisitor]?.moo ?? 0
+    },
+    visitorSta: (state) => {
+      if (!state.activeVisitor) return 0
+      if (state.activeVisitor === 'ichiro') return state.staIchiro
+      return state.charactersState[state.activeVisitor]?.sta ?? 0
+    },
+    visitorAff: (state) => {
+      if (!state.activeVisitor) return 0
+      if (state.activeVisitor === 'ichiro') return state.playerAffinityIchiro
+      return state.charactersState[state.activeVisitor]?.playerAffinity ?? 0
+    },
+    visitorShowsSick: (state) => {
+      if (!state.activeVisitor) return false
+      if (state.activeVisitor === 'ichiro') return state.hltIchiro < 30 && state.lowHealthSinceIchiro && nowMs() - state.lowHealthSinceIchiro >= SICK_DISPLAY_MS
+      const cs = state.charactersState[state.activeVisitor]
+      return !!(cs && cs.hlt < 30 && cs.lowHealthSince && nowMs() - cs.lowHealthSince >= SICK_DISPLAY_MS)
+    },
     isSick:         (state) => state.sick && (state.sickUntil === null || nowMs() < state.sickUntil),
     tokiShowsSick:  (state) => state.hlt < 30 && state.lowHealthSinceToki && nowMs() - state.lowHealthSinceToki >= SICK_DISPLAY_MS,
     ichiroShowsSick: (state) => state.hltIchiro < 30 && state.lowHealthSinceIchiro && nowMs() - state.lowHealthSinceIchiro >= SICK_DISPLAY_MS,
     sleepRemaining: (state) => state.sleepEnd ? Math.max(0, state.sleepEnd - state._sleepNow) : 0,
     sleepRemainingIchiro: (state) => state.sleepEndIchiro ? Math.max(0, state.sleepEndIchiro - state._sleepNowIchiro) : 0,
+    sleepRemainingVisitor: (state) => {
+      if (!state.activeVisitor) return 0
+      if (state.activeVisitor === 'ichiro') return state.sleepEndIchiro ? Math.max(0, state.sleepEndIchiro - state._sleepNowIchiro) : 0
+      const cs = state.charactersState[state.activeVisitor]
+      return cs?.sleepEnd ? Math.max(0, cs.sleepEnd - state._sleepNowVisitor) : 0
+    },
     targetIsSleeping: (state) => (target = 'toki') => {
-      if (target === 'duo') return !!state.sleeping || !!state.sleepingIchiro
-      if (target === 'ichiro') return !!state.sleepingIchiro
+      if (target === 'duo') {
+        const visitorSleeping = state.activeVisitor === 'ichiro'
+          ? !!state.sleepingIchiro
+          : !!(state.charactersState[state.activeVisitor]?.sleeping)
+        return !!state.sleeping || visitorSleeping
+      }
+      if (target !== 'toki') {
+        if (state.activeVisitor === 'ichiro') return !!state.sleepingIchiro
+        return !!(state.charactersState[state.activeVisitor]?.sleeping)
+      }
       return !!state.sleeping
     },
     adoptedDays:    (state) => {
@@ -412,7 +483,7 @@ export const usePetStore = defineStore('pet', {
           sat: this.sat, hlt: this.hlt, moo: this.moo, aff: this.aff,
           playerAffinityToki: this.playerAffinityToki,
           playerAffinityIchiro: this.playerAffinityIchiro,
-          relationshipTokiIchiro: this.relationshipTokiIchiro,
+          relationships: this.relationships,
           satIchiro: this.satIchiro,
           hltIchiro: this.hltIchiro,
           mooIchiro: this.mooIchiro,
@@ -467,8 +538,16 @@ export const usePetStore = defineStore('pet', {
         const t       = Math.min(elapsed, 21600)
 
         // ── Ichiro / 訪客系統（永遠從頂層欄位讀取）──────────────────────
-        this.playerAffinityIchiro   = clamp(d.playerAffinityIchiro ?? 0, 0, 300)
-        this.relationshipTokiIchiro = clamp(d.relationshipTokiIchiro ?? 0, 0, 300)
+        this.playerAffinityIchiro = clamp(d.playerAffinityIchiro ?? 0, 0, 300)
+        // 遷移：舊存檔用 relationshipTokiIchiro，新存檔用 relationships map
+        if (d.relationships) {
+          this.relationships = d.relationships
+        } else {
+          this.relationships = {}
+          if (d.relationshipTokiIchiro) {
+            this.relationships[pairKey('toki', 'ichiro')] = clamp(d.relationshipTokiIchiro ?? 0, 0, 300)
+          }
+        }
         const hadActiveVisitor = d.activeVisitor === 'ichiro'
         const ichiroBaseSat    = d.satIchiro ?? 72
         this.satIchiro = clamp(d.sleepingIchiro
@@ -495,6 +574,18 @@ export const usePetStore = defineStore('pet', {
           this.visitorSprite    = 'sleeping'
           if (nowMs() >= d.sleepEndIchiro) {
             setTimeout(() => this.wakeUp(false, 'ichiro'), 500)
+          }
+        }
+
+        // 非 Ichiro 訪客：若正在睡覺且時間已到則喚醒
+        if (this.activeVisitor && this.activeVisitor !== 'ichiro') {
+          const vcs = this.charactersState[this.activeVisitor]
+          if (vcs?.sleeping && vcs?.sleepEnd) {
+            this._sleepNowVisitor = nowMs()
+            this.visitorSprite = 'sleeping'
+            if (nowMs() >= vcs.sleepEnd) {
+              setTimeout(() => this.wakeUp(false, this.activeVisitor), 500)
+            }
           }
         }
 
@@ -593,16 +684,34 @@ export const usePetStore = defineStore('pet', {
       }
 
       if (this.hasActiveVisitor) {
-        if (this.sleepingIchiro) {
-          this.satIchiro = clamp(this.satIchiro - 0.25 / 8)
+        if (this.activeVisitor === 'ichiro') {
+          if (this.sleepingIchiro) {
+            this.satIchiro = clamp(this.satIchiro - 0.25 / 8)
+          } else {
+            this.satIchiro = clamp(this.satIchiro - 0.85 / 8)
+            this.hltIchiro = clamp(this.hltIchiro - 0.06 / 8)
+            this.mooIchiro = clamp(this.mooIchiro - (0.5 / 8) * r)
+            this.staIchiro = clamp(this.staIchiro - 0.32 / 1)
+          }
+          if (this.satIchiro < 10 || this.mooIchiro < 10) {
+            this.playerAffinityIchiro = clamp(this.playerAffinityIchiro - 0.08, 0, 300)
+          }
         } else {
-          this.satIchiro = clamp(this.satIchiro - 0.85 / 8)
-          this.hltIchiro = clamp(this.hltIchiro - 0.06 / 8)
-          this.mooIchiro = clamp(this.mooIchiro - (0.5 / 8) * r)
-          this.staIchiro = clamp(this.staIchiro - 0.32 / 1)
-        }
-        if (this.satIchiro < 10 || this.mooIchiro < 10) {
-          this.playerAffinityIchiro = clamp(this.playerAffinityIchiro - 0.08, 0, 300)
+          const cs = this.charactersState[this.activeVisitor]
+          if (cs) {
+            if (cs.sleeping) {
+              cs.sat = clamp(cs.sat - 0.25 / 8)
+            } else {
+              cs.sat = clamp(cs.sat - 0.85 / 8)
+              cs.hlt = clamp(cs.hlt - 0.06 / 8)
+              cs.moo = clamp(cs.moo - (0.5 / 8) * r)
+              cs.sta = clamp(cs.sta - 0.32 / 1)
+            }
+            if (cs.sat < 10 || cs.moo < 10) {
+              cs.aff = clamp((cs.aff || 0) - 0.08, 0, 300)
+              cs.playerAffinity = cs.aff
+            }
+          }
         }
       }
 
@@ -655,12 +764,20 @@ export const usePetStore = defineStore('pet', {
       } else {
         this.lowHealthSinceIchiro = null
       }
+
+      if (this.hasActiveVisitor && this.activeVisitor !== 'ichiro') {
+        const cs = this.charactersState[this.activeVisitor]
+        if (cs) {
+          if (cs.hlt < 30) { if (!cs.lowHealthSince) cs.lowHealthSince = nowMs() }
+          else cs.lowHealthSince = null
+        }
+      }
     },
 
     // ── Sprite & message ─────────────────────────────────────────────────
 
     setSprite(name) { this.currentSprite = name },
-    setMsg(text)    { this.lastMsg = text },
+    setMsg(text)    { this.lastMsg = text.replace(/\{name\}/g, this.tokiName) },
 
     setCharacter(id) {
       if (id === this.selectedCharacter) return
@@ -760,8 +877,20 @@ export const usePetStore = defineStore('pet', {
       this.playerAffinityIchiro = clamp(this.playerAffinityIchiro + amount, 0, 300)
     },
 
+    _addVisitorAffinity(amount) {
+      if (!this.activeVisitor) return
+      if (this.activeVisitor === 'ichiro') {
+        this.playerAffinityIchiro = clamp(this.playerAffinityIchiro + amount, 0, 300)
+      } else {
+        const cs = this.charactersState[this.activeVisitor]
+        if (cs) { cs.aff = clamp((cs.aff || 0) + amount, 0, 300); cs.playerAffinity = cs.aff }
+      }
+    },
+
     _addRelationship(amount) {
-      this.relationshipTokiIchiro = clamp(this.relationshipTokiIchiro + amount, 0, 300)
+      if (!this.activeVisitor) return
+      const key = pairKey(this.selectedCharacter, this.activeVisitor)
+      this.relationships[key] = clamp((this.relationships[key] ?? 0) + amount, 0, 300)
     },
 
     _needsVisitor(target) {
@@ -769,13 +898,15 @@ export const usePetStore = defineStore('pet', {
     },
 
     _isTargetSleeping(target) {
-      if (target === 'duo') return this.isSleeping || this.isIchiroSleeping
-      if (target === 'ichiro') return this.isIchiroSleeping
+      if (target === 'duo') return this.isSleeping || this.isVisitorSleeping
+      if (target !== 'toki') return this.isVisitorSleeping
       return this.isSleeping
     },
 
     _targetName(target) {
-      return target === 'ichiro' ? 'Ichiro' : target === 'duo' ? `${this.tokiName} 和 Ichiro` : this.tokiName
+      if (target === 'duo') return `${this.tokiName} 和 ${this.activeVisitorName}`
+      if (target !== 'toki') return this.activeVisitorName
+      return this.tokiName
     },
 
     idleUpdate() {
@@ -783,13 +914,13 @@ export const usePetStore = defineStore('pet', {
       // sick 圖只在健康低於 30 且持續 8 小時後顯示。
       if (this.tokiShowsSick) {
         this.setSprite('sick')
-        if (this.hasActiveVisitor) this.visitorSprite = this._getIdleSpriteFor('ichiro')
+        if (this.hasActiveVisitor) this.visitorSprite = this._getIdleSpriteFor(this.activeVisitor)
         this.setMsg(rnd(IDLE_MSGS.sick))
         return
       }
       const sp = this._getIdleSprite()
       this.setSprite(sp)
-      if (this.hasActiveVisitor) this.visitorSprite = this._getIdleSpriteFor('ichiro')
+      if (this.hasActiveVisitor) this.visitorSprite = this._getIdleSpriteFor(this.activeVisitor)
       if (this.nightMode && Math.random() < 0.4) {
         this.setMsg(rnd(NIGHT_MSGS))
       } else {
@@ -817,12 +948,22 @@ export const usePetStore = defineStore('pet', {
         if (this.mooIchiro < 25) return 'helpless'
         return this._ambientSprite('ichiro')
       }
-      return this._getIdleSprite()
+      const cs = this.charactersState[who]
+      if (!cs) return 'happy'
+      if (cs.sleeping) return 'sleeping'
+      if (cs.sat < 50) return 'hungry'
+      if (this.visitorShowsSick) return 'sick'
+      if (cs.sta < 20) return 'impatient'
+      if (cs.hlt < 30) return 'helpless'
+      if (cs.moo < 25) return 'helpless'
+      return this._ambientSprite(who)
     },
 
     _ambientSprite(who = 'toki') {
-      const aff = who === 'ichiro' ? this.playerAffinityIchiro : this.playerAffinityToki
-      const rel = this.relationshipTokiIchiro
+      const aff = who === 'ichiro' ? this.playerAffinityIchiro
+        : who === 'toki' ? this.playerAffinityToki
+        : (this.charactersState[who]?.playerAffinity ?? 50)
+      const rel = this.currentRelationship
       const pool = ['happy', 'happy', 'shy', 'patted']
       if (aff >= 80) pool.push('heart')
       if (rel >= 40 && this.hasActiveVisitor) pool.push('shy', 'heart')
@@ -960,31 +1101,41 @@ export const usePetStore = defineStore('pet', {
     doIchiroAction(type) {
       if (this.reacting) return
       if (!this.hasActiveVisitor) return 'need_visitor'
+      const vid = this.activeVisitor
+      const visName = vid === 'ichiro' ? 'Ichiro' : getCharacterName(vid)
+      const addVisitorMoo = (v) => {
+        if (vid === 'ichiro') this.mooIchiro = clamp(this.mooIchiro + v)
+        else { const cs = this.charactersState[vid]; if (cs) cs.moo = clamp(cs.moo + v) }
+      }
+      const addVisitorSta = (v) => {
+        if (vid === 'ichiro') this.staIchiro = clamp(this.staIchiro + v)
+        else { const cs = this.charactersState[vid]; if (cs) cs.sta = clamp(cs.sta + v) }
+      }
       switch (type) {
         case 'pat':
-          this.mooIchiro = clamp(this.mooIchiro + 12)
-          this._addIchiroAffinity(9)
-          this.reactPair(this.currentSprite, 'patted', 'hearts', ['Ichiro：謝謝，感覺好多了。', 'Toki：...你也太好哄了。', 'Ichiro 微微笑了。'])
+          addVisitorMoo(12); this._addVisitorAffinity(9)
+          this.reactPair(this.currentSprite, 'patted', 'hearts', [
+            `${visName}：謝謝，感覺好多了。`, '{name}：...你也太好哄了。', `${visName} 微微笑了。`])
           break
         case 'praise':
-          this.mooIchiro = clamp(this.mooIchiro + 16)
-          this._addIchiroAffinity(10)
-          this.reactPair(this.currentSprite, 'happy', 'hearts', ['Ichiro：我會繼續努力。', 'Ichiro：被你這樣說，有點高興。', 'Toki：哼。'])
+          addVisitorMoo(16); this._addVisitorAffinity(10)
+          this.reactPair(this.currentSprite, 'happy', 'hearts', [
+            `${visName}：我會繼續努力。`, `${visName}：被你這樣說，有點高興。`, '{name}：哼。'])
           break
         case 'poke':
-          this.mooIchiro = clamp(this.mooIchiro - 4)
-          this.reactPair(this.currentSprite, 'helpless', 'near', ['Ichiro：咦？怎麼了？', 'Ichiro 有點困惑。', 'Toki：你也會被戳喔。'])
+          addVisitorMoo(-4)
+          this.reactPair(this.currentSprite, 'helpless', 'near', [
+            `${visName}：咦？怎麼了？`, `${visName} 有點困惑。`, '{name}：你也會被戳喔。'])
           break
         case 'disturb':
-          this.mooIchiro = clamp(this.mooIchiro - 12)
-          this._addIchiroAffinity(-3)
-          this.reactPair('disturbed', 'impatient', 'near', ['Ichiro：現在有點困擾。', 'Toki：你終於懂了。', '氣氛微妙地冷掉了。'])
+          addVisitorMoo(-12); this._addVisitorAffinity(-3)
+          this.reactPair('disturbed', 'impatient', 'near', [
+            `${visName}：現在有點困擾。`, '{name}：你終於懂了。', '氣氛微妙地冷掉了。'])
           break
         case 'idle_together':
-          this.staIchiro = clamp(this.staIchiro + 12)
-          this.mooIchiro = clamp(this.mooIchiro + 10)
-          this._addIchiroAffinity(6)
-          this.reactPair(this.currentSprite, 'happy', 'near', ['Ichiro：偶爾一起發呆也很好。', 'Toki：...安靜是優點。', '房間慢慢靜了下來。'])
+          addVisitorSta(12); addVisitorMoo(10); this._addVisitorAffinity(6)
+          this.reactPair(this.currentSprite, 'happy', 'near', [
+            `${visName}：偶爾一起發呆也很好。`, '{name}：...安靜是優點。', '房間慢慢靜了下來。'])
           break
         default:
           return false
@@ -993,27 +1144,29 @@ export const usePetStore = defineStore('pet', {
       return true
     },
 
-    unlockVisitor() {
+    unlockVisitor(id = 'ichiro') {
       this.visitorUnlocked = true
-      this.activeVisitor = 'ichiro'
+      this.activeVisitor = id
       this.visitorSprite = 'happy'
+      const visName = id === 'ichiro' ? 'Ichiro' : getCharacterName(id)
       this.reactPair('happy', 'happy', 'hearts', [
-        'Ichiro：打擾了。今天可以一起待著嗎？',
-        'Toki：...隨便。你都來了。',
-        'Ichiro 來到了 Toki 家。'
+        `${visName}：打擾了。今天可以一起待著嗎？`,
+        '{name}：...隨便。你都來了。',
+        `${visName} 來了。`
       ], 2600)
       this.save()
     },
 
     callVisitor(id = 'ichiro') {
       if (this.reacting) return
-      if (id !== 'ichiro') return false
       this.visitorUnlocked = true
-      this.activeVisitor = 'ichiro'
+      this.activeVisitor = id
       this.visitorSprite = 'happy'
+      this._sleepNowVisitor = 0
+      const visName = id === 'ichiro' ? 'Ichiro' : getCharacterName(id)
       this.reactPair('energetic', 'happy', 'near', [
-        'Ichiro：我來了。',
-        'Toki：...進來吧。',
+        `${visName}：我來了。`,
+        '{name}：...進來吧。',
         '今天開始是雙角色模式。'
       ], 2400)
       this.save()
@@ -1022,12 +1175,19 @@ export const usePetStore = defineStore('pet', {
 
     sendVisitorHome() {
       if (!this.hasActiveVisitor) return false
+      const visName = this.activeVisitorName
+      if (this.activeVisitor === 'ichiro') {
+        this.sleepingIchiro   = null
+        this.sleepEndIchiro   = null
+        this.sleepStartIchiro = null
+      } else {
+        const cs = this.charactersState[this.activeVisitor]
+        if (cs) { cs.sleeping = null; cs.sleepEnd = null; cs.sleepStart = null }
+        this._sleepNowVisitor = 0
+      }
       this.activeVisitor = null
       this.pairEffect = null
-      this.sleepingIchiro = null
-      this.sleepEndIchiro = null
-      this.sleepStartIchiro = null
-      this.react('energetic', ['Ichiro 回去了。', 'Toki：...突然安靜下來了。', '下次再叫他來。'], 2200)
+      this.react('energetic', [`${visName} 回去了。`, '{name}：...突然安靜下來了。', '下次再叫他來。'], 2200)
       this.save()
       return true
     },
@@ -1038,7 +1198,7 @@ export const usePetStore = defineStore('pet', {
       if (!this.hasActiveVisitor) return 'need_visitor'
       const action = DUO_ACTIONS.find(x => x.id === id)
       if (!action) return false
-      if (this.relationshipTokiIchiro < action.minRel) return 'locked'
+      if (this.currentRelationship < action.minRel) return 'locked'
 
       this.sat = clamp(this.sat + (action.sat || 0))
       this.moo = clamp(this.moo + (action.moo || 0))
@@ -1060,7 +1220,7 @@ export const usePetStore = defineStore('pet', {
       if (!this.hasActiveVisitor) return 'need_visitor'
       const action = DUO_CARE_ACTIONS.find(x => x.id === id)
       if (!action) return false
-      if (this.relationshipTokiIchiro < action.minRel) return 'locked'
+      if (this.currentRelationship < action.minRel) return 'locked'
 
       this.hlt = clamp(this.hlt + (action.hlt || 0))
       this.sta = clamp(this.sta + (action.sta || 0))
@@ -1127,32 +1287,48 @@ export const usePetStore = defineStore('pet', {
     doIchiroFood(id) {
       if (this.reacting) return
       if (!this.hasActiveVisitor) return 'need_visitor'
+      const vid = this.activeVisitor
+      const visName = vid === 'ichiro' ? 'Ichiro' : getCharacterName(vid)
       const f = FOODS.find(x => x.id === id)
       if (!f) return
       if (f.duoOnly) return 'duo_only'
 
-      this.satIchiro = clamp(this.satIchiro + (f.sat || 0))
-      this.hltIchiro = clamp(this.hltIchiro + (f.hlt || 0))
-      this.staIchiro = clamp(this.staIchiro + (f.sta || 0))
-      const pref = ICHIRO_FOOD_PREFS[id]
-      if (pref) {
-        this.mooIchiro = clamp(this.mooIchiro + pref.moo)
-        this._addIchiroAffinity(pref.aff)
-      } else if (f.healthFood) {
-        const tier = this.playerAffinityIchiro >= 200 ? 2 : this.playerAffinityIchiro >= 100 ? 1 : 0
-        this.mooIchiro = clamp(this.mooIchiro + f.mooTiers[tier])
-        this._addIchiroAffinity(f.affTiers[tier])
-      } else {
-        this.mooIchiro = clamp(this.mooIchiro + (f.moo || 0))
-        this._addIchiroAffinity(f.aff || 0)
+      const getVisAff = () => vid === 'ichiro' ? this.playerAffinityIchiro : (this.charactersState[vid]?.playerAffinity ?? 0)
+      const addVisitorStats = (dSat, dHlt, dSta, dMoo, dAff) => {
+        if (vid === 'ichiro') {
+          this.satIchiro = clamp(this.satIchiro + dSat)
+          this.hltIchiro = clamp(this.hltIchiro + dHlt)
+          this.staIchiro = clamp(this.staIchiro + dSta)
+          this.mooIchiro = clamp(this.mooIchiro + dMoo)
+          this._addIchiroAffinity(dAff)
+        } else {
+          const cs = this.charactersState[vid]
+          if (cs) {
+            cs.sat = clamp(cs.sat + dSat); cs.hlt = clamp(cs.hlt + dHlt)
+            cs.sta = clamp(cs.sta + dSta); cs.moo = clamp(cs.moo + dMoo)
+            cs.aff = clamp((cs.aff || 0) + dAff, 0, 300); cs.playerAffinity = cs.aff
+          }
+        }
       }
-      const sprite = pref?.sprite || (f.healthFood ? 'helpless' : (f.sp === 'sad' ? 'helpless' : f.sp))
-      const msgs = pref?.msgs || [
-        `Ichiro 吃了${f.name}。`,
-        'Ichiro：謝謝，很好吃。',
-        'Toki：...你吃得很認真。'
-      ]
-      this.reactPair(this.currentSprite, sprite, 'near', msgs, 2400)
+
+      const pref = vid === 'ichiro' ? ICHIRO_FOOD_PREFS[id] : null
+      if (pref) {
+        addVisitorStats(f.sat || 0, f.hlt || 0, f.sta || 0, pref.moo, pref.aff)
+        this.reactPair(this.currentSprite, pref.sprite || 'happy', 'near', pref.msgs, 2400)
+      } else if (f.healthFood) {
+        const aff = getVisAff()
+        const tier = aff >= 200 ? 2 : aff >= 100 ? 1 : 0
+        addVisitorStats(f.sat || 0, f.hlt || 0, f.sta || 0, f.mooTiers[tier], f.affTiers[tier])
+        this.reactPair(this.currentSprite, 'helpless', 'near', [
+          `${visName} 吃了${f.name}。`, `${visName}：謝謝，這個剛剛好。`, '{name}：...你吃得很認真。'
+        ], 2400)
+      } else {
+        addVisitorStats(f.sat || 0, f.hlt || 0, f.sta || 0, f.moo || 0, f.aff || 0)
+        const sprite = f.sp === 'sad' ? 'helpless' : f.sp
+        this.reactPair(this.currentSprite, sprite, 'near', [
+          `${visName} 吃了${f.name}。`, `${visName}：謝謝，很好吃。`, '{name}：...你吃得很認真。'
+        ], 2400)
+      }
       this.save()
       return true
     },
@@ -1210,17 +1386,22 @@ export const usePetStore = defineStore('pet', {
     doIchiroCare(id) {
       if (this.reacting) return
       if (!this.hasActiveVisitor) return 'need_visitor'
+      const vid = this.activeVisitor
+      const visName = vid === 'ichiro' ? 'Ichiro' : getCharacterName(vid)
       const item = CARE_ITEMS.find(x => x.id === id)
       if (!item) return
 
-      if (item.type === 'urgent' && this.hltIchiro > 30) {
-        this.mooIchiro = clamp(this.mooIchiro - 6)
-        this._addIchiroAffinity(-2)
-        this.reactPair(this.currentSprite, 'helpless', 'near', ['Ichiro：我真的沒事，不用擔心。', 'Toki：被照顧太多了。', 'Ichiro 有點不好意思。'])
+      const getVisHlt = () => vid === 'ichiro' ? this.hltIchiro : (this.charactersState[vid]?.hlt ?? 100)
+      if (item.type === 'urgent' && getVisHlt() > 30) {
+        if (vid === 'ichiro') this.mooIchiro = clamp(this.mooIchiro - 6)
+        else { const cs = this.charactersState[vid]; if (cs) cs.moo = clamp(cs.moo - 6) }
+        this._addVisitorAffinity(-2)
+        this.reactPair(this.currentSprite, 'helpless', 'near', [
+          `${visName}：我真的沒事，不用擔心。`, '{name}：被照顧太多了。', `${visName} 有點不好意思。`])
         return 'refused'
       }
 
-      const cooldownKey = `ichiro:${id}`
+      const cooldownKey = `visitor:${vid}:${id}`
       if (item.type === 'daily' || item.type === 'weekly') {
         const lastUsed = this.careCooldowns[cooldownKey] || 0
         const cooldownMs = item.cooldownHours * 3600 * 1000
@@ -1229,17 +1410,29 @@ export const usePetStore = defineStore('pet', {
       }
 
       if (item.type === 'once') {
-        if (this.checkupDoneIchiro) return 'used'
-        this.checkupDoneIchiro = true
+        if (vid === 'ichiro') {
+          if (this.checkupDoneIchiro) return 'used'
+          this.checkupDoneIchiro = true
+        } else {
+          const cs = this.charactersState[vid]
+          if (!cs) return 'used'
+          if (cs.checkupDone) return 'used'
+          cs.checkupDone = true
+        }
       }
 
-      this.hltIchiro = clamp(this.hltIchiro + (item.hlt || 0))
-      this.mooIchiro = clamp(this.mooIchiro + (item.moo || 0))
-      this._addIchiroAffinity(item.aff || 0)
+      if (vid === 'ichiro') {
+        this.hltIchiro = clamp(this.hltIchiro + (item.hlt || 0))
+        this.mooIchiro = clamp(this.mooIchiro + (item.moo || 0))
+      } else {
+        const cs = this.charactersState[vid]
+        if (cs) { cs.hlt = clamp(cs.hlt + (item.hlt || 0)); cs.moo = clamp(cs.moo + (item.moo || 0)) }
+      }
+      this._addVisitorAffinity(item.aff || 0)
       this.reactPair(this.currentSprite, 'happy', 'hearts', [
-        `Ichiro 做了${item.name}。`,
-        'Ichiro：有你幫忙，安心多了。',
-        'Toki：...照顧得還行。'
+        `${visName} 做了${item.name}。`,
+        `${visName}：有你幫忙，安心多了。`,
+        '{name}：...照顧得還行。'
       ], 2400)
       this.save()
       return true
@@ -1260,11 +1453,11 @@ export const usePetStore = defineStore('pet', {
       if (this._needsVisitor(target)) return 'need_visitor'
       if (target === 'duo') return this.doDuoAction('mini_game')
       if (this.isDisturbed) return 'disturbed'
-      const sat = target === 'ichiro' ? this.satIchiro : this.sat
-      const sta = target === 'ichiro' ? this.staIchiro : this.sta
+      const sat = target !== 'toki' ? this.visitorSat : this.sat
+      const sta = target !== 'toki' ? this.visitorSta : this.sta
       if (sat <= 0) {
         this.react('hungry', ['餓著你想讓我玩？', '先給我吃的。'], 2000)
-        if (target === 'ichiro') this._addIchiroAffinity(-5)
+        if (target !== 'toki') this._addVisitorAffinity(-5)
         else this._addTokiAffinity(-5)
         return false
       }
@@ -1380,15 +1573,26 @@ export const usePetStore = defineStore('pet', {
       if (this.reacting) return
       const endAt = nowMs() + (type === 'nap' ? NAP_MS : BED_MS)
 
-      if (target === 'ichiro') {
+      if (target !== 'toki') {
         if (!this.hasActiveVisitor) return 'need_visitor'
-        if (this.sleepingIchiro) return
-        this.sleepingIchiro   = type
-        this.sleepStartIchiro = nowMs()
-        this.sleepEndIchiro   = endAt
-        this._sleepNowIchiro  = nowMs()
-        this.visitorSprite    = 'sleeping'
-        this.setMsg(type === 'nap' ? 'Ichiro：我休息一下。' : 'Ichiro：晚安。')
+        const vid = this.activeVisitor
+        const visName = vid === 'ichiro' ? 'Ichiro' : getCharacterName(vid)
+        if (vid === 'ichiro') {
+          if (this.sleepingIchiro) return
+          this.sleepingIchiro   = type
+          this.sleepStartIchiro = nowMs()
+          this.sleepEndIchiro   = endAt
+          this._sleepNowIchiro  = nowMs()
+        } else {
+          const cs = this.charactersState[vid]
+          if (!cs || cs.sleeping) return
+          cs.sleeping   = type
+          cs.sleepStart = nowMs()
+          cs.sleepEnd   = endAt
+          this._sleepNowVisitor = nowMs()
+        }
+        this.visitorSprite = 'sleeping'
+        this.setMsg(type === 'nap' ? `${visName}：我休息一下。` : `${visName}：晚安。`)
         this.save()
         return true
       }
@@ -1405,7 +1609,10 @@ export const usePetStore = defineStore('pet', {
     },
 
     wakeUp(forced = false, target = 'toki') {
-      if (target === 'ichiro') return this._wakeIchiro(forced)
+      if (target !== 'toki') {
+        if (this.activeVisitor === 'ichiro') return this._wakeIchiro(forced)
+        return this._wakeVisitor(forced, this.activeVisitor)
+      }
       const type = this.sleeping
       if (!type) return
       const sleptMs = nowMs() - (this.sleepStart || nowMs())
@@ -1463,12 +1670,12 @@ export const usePetStore = defineStore('pet', {
         this.hltIchiro = clamp(this.hltIchiro + Math.round(6 * frac))
         this.staIchiro = clamp(this.staIchiro + Math.round(15 * frac))
         this._addIchiroAffinity(-2)
-        this.reactPair(this.currentSprite, 'impatient', 'near', ['Ichiro：啊...我還沒睡醒。', 'Ichiro：再一下就好。', 'Toki：被吵醒很煩吧。'], 2200)
+        this.reactPair(this.currentSprite, 'impatient', 'near', ['Ichiro：啊...我還沒睡醒。', 'Ichiro：再一下就好。', '{name}：被吵醒很煩吧。'], 2200)
       } else if (type === 'nap') {
         this.mooIchiro = clamp(this.mooIchiro + 14)
         this.hltIchiro = clamp(this.hltIchiro + 8)
         this.staIchiro = clamp(this.staIchiro + 25)
-        this.reactPair(this.currentSprite, 'happy', 'hearts', ['Ichiro：睡了一下，舒服多了。', 'Ichiro：謝謝你讓我休息。', 'Toki：...醒了喔。'], 2200)
+        this.reactPair(this.currentSprite, 'happy', 'hearts', ['Ichiro：睡了一下，舒服多了。', 'Ichiro：謝謝你讓我休息。', '{name}：...醒了喔。'], 2200)
       } else {
         const frac = Math.min(sleptMs / BED_MS, 1)
         this.mooIchiro = clamp(this.mooIchiro + Math.round(20 * frac))
@@ -1476,16 +1683,59 @@ export const usePetStore = defineStore('pet', {
         this.staIchiro = clamp(this.staIchiro + Math.round(60 * frac))
         this.satIchiro = clamp(this.satIchiro - 18)
         if (frac >= 0.9) {
-          this.reactPair(this.currentSprite, 'happy', 'hearts', ['Ichiro：早安，今天也請多指教。', 'Ichiro：睡得很好。', 'Toki：...精神不錯。'], 2200)
+          this.reactPair(this.currentSprite, 'happy', 'hearts', ['Ichiro：早安，今天也請多指教。', 'Ichiro：睡得很好。', '{name}：...精神不錯。'], 2200)
         } else {
-          this.reactPair(this.currentSprite, 'helpless', 'near', ['Ichiro：還有一點睏。', 'Ichiro：是不是太早起來了？', 'Toki：看吧，會累。'], 2200)
+          this.reactPair(this.currentSprite, 'helpless', 'near', ['Ichiro：還有一點睏。', 'Ichiro：是不是太早起來了？', '{name}：看吧，會累。'], 2200)
+        }
+      }
+      this.save()
+    },
+
+    _wakeVisitor(forced = false, vid) {
+      const cs = this.charactersState[vid]
+      if (!cs?.sleeping) return
+      const type = cs.sleeping
+      const sleptMs = nowMs() - (cs.sleepStart || nowMs())
+      const visName = getCharacterName(vid)
+
+      cs.sleeping   = null
+      cs.sleepEnd   = null
+      cs.sleepStart = null
+      this._sleepNowVisitor = 0
+      this.visitorSprite    = 'happy'
+
+      if (forced && type === 'nap') {
+        const frac = Math.min(sleptMs / NAP_MS, 1)
+        cs.moo = clamp(cs.moo - 8)
+        cs.hlt = clamp(cs.hlt + Math.round(6 * frac))
+        cs.sta = clamp(cs.sta + Math.round(15 * frac))
+        this._addVisitorAffinity(-2)
+        this.reactPair(this.currentSprite, 'impatient', 'near', [
+          `${visName}：啊...我還沒睡醒。`, `${visName}：再一下就好。`, '{name}：被吵醒很煩吧。'], 2200)
+      } else if (type === 'nap') {
+        cs.moo = clamp(cs.moo + 14); cs.hlt = clamp(cs.hlt + 8); cs.sta = clamp(cs.sta + 25)
+        this.reactPair(this.currentSprite, 'happy', 'hearts', [
+          `${visName}：睡了一下，舒服多了。`, `${visName}：謝謝你讓我休息。`, '{name}：...醒了喔。'], 2200)
+      } else {
+        const frac = Math.min(sleptMs / BED_MS, 1)
+        cs.moo = clamp(cs.moo + Math.round(20 * frac))
+        cs.hlt = clamp(cs.hlt + Math.round(15 * frac))
+        cs.sta = clamp(cs.sta + Math.round(60 * frac))
+        cs.sat = clamp(cs.sat - 18)
+        if (frac >= 0.9) {
+          this.reactPair(this.currentSprite, 'happy', 'hearts', [
+            `${visName}：早安，今天也請多指教。`, `${visName}：睡得很好。`, '{name}：...精神不錯。'], 2200)
+        } else {
+          this.reactPair(this.currentSprite, 'helpless', 'near', [
+            `${visName}：還有一點睏。`, `${visName}：是不是太早起來了？`, '{name}：看吧，會累。'], 2200)
         }
       }
       this.save()
     },
 
     tickSleep() {
-      const hadSleep = this.sleeping || this.sleepingIchiro
+      const visitorSleeping = this.isVisitorSleeping
+      const hadSleep = this.sleeping || visitorSleeping
       if (!hadSleep) return
 
       if (this.sleeping) {
@@ -1499,15 +1749,29 @@ export const usePetStore = defineStore('pet', {
         if (rem <= 0) this.wakeUp(false, 'toki')
       }
 
-      if (this.sleepingIchiro) {
-        this._sleepNowIchiro = nowMs()
-        const rem = this.sleepRemainingIchiro
-        if (!this.reacting && !this.sleeping) {
-          this.setMsg(this.sleepingIchiro === 'nap'
-            ? `Ichiro：...zz  剩 ${_fmtTime(rem)}`
-            : `Ichiro：...zzz  剩 ${_fmtTime(rem)}`)
+      if (visitorSleeping) {
+        const vid = this.activeVisitor
+        const visName = vid === 'ichiro' ? 'Ichiro' : getCharacterName(vid)
+        if (vid === 'ichiro') {
+          this._sleepNowIchiro = nowMs()
+          const rem = this.sleepRemainingIchiro
+          if (!this.reacting && !this.sleeping) {
+            this.setMsg(this.sleepingIchiro === 'nap'
+              ? `${visName}：...zz  剩 ${_fmtTime(rem)}`
+              : `${visName}：...zzz  剩 ${_fmtTime(rem)}`)
+          }
+          if (rem <= 0) this.wakeUp(false, 'ichiro')
+        } else {
+          this._sleepNowVisitor = nowMs()
+          const rem = this.sleepRemainingVisitor
+          if (!this.reacting && !this.sleeping) {
+            const cs = this.charactersState[vid]
+            this.setMsg(cs?.sleeping === 'nap'
+              ? `${visName}：...zz  剩 ${_fmtTime(rem)}`
+              : `${visName}：...zzz  剩 ${_fmtTime(rem)}`)
+          }
+          if (rem <= 0) this.wakeUp(false, vid)
         }
-        if (rem <= 0) this.wakeUp(false, 'ichiro')
       }
     },
 
@@ -1532,21 +1796,22 @@ export const usePetStore = defineStore('pet', {
         if (e > 0 && e < 15) this._sendNotif('toki_sta_warn', `${this.tokiName} 快沒體力了 😪`, `體力：${e}　他需要休息了。`)
       }
 
-      if (this.hasActiveVisitor && !this.sleepingIchiro) {
-        const s = Math.round(this.satIchiro)
-        const h = Math.round(this.hltIchiro)
-        const m = Math.round(this.mooIchiro)
-        const e = Math.round(this.staIchiro)
+      if (this.hasActiveVisitor && !this.isVisitorSleeping) {
+        const vn = this.activeVisitorName
+        const s = Math.round(this.visitorSat)
+        const h = Math.round(this.visitorHlt)
+        const m = Math.round(this.visitorMoo)
+        const e = Math.round(this.visitorSta)
 
-        if (s <= 0)  this._sendNotif('ichiro_sat_crit', 'Ichiro 餓壞了 🚨',     `飽食：${s}　Ichiro：可以吃點東西嗎？`, 1)
-        if (h <= 0)  this._sendNotif('ichiro_hlt_crit', 'Ichiro 健康亮紅燈 🆘', `健康：${h}　他的狀態非常糟糕。`, 1)
-        if (m <= 0)  this._sendNotif('ichiro_moo_crit', 'Ichiro 心情很差 🌧',   `心情：${m}　他看起來有點低落。`, 1)
-        if (e <= 0)  this._sendNotif('ichiro_sta_crit', 'Ichiro 精疲力竭了 😵', `體力：${e}　他需要休息。`, 1)
+        if (s <= 0)  this._sendNotif('visitor_sat_crit', `${vn} 餓壞了 🚨`,     `飽食：${s}　${vn}：可以吃點東西嗎？`, 1)
+        if (h <= 0)  this._sendNotif('visitor_hlt_crit', `${vn} 健康亮紅燈 🆘`, `健康：${h}　他的狀態非常糟糕。`, 1)
+        if (m <= 0)  this._sendNotif('visitor_moo_crit', `${vn} 心情很差 🌧`,   `心情：${m}　他看起來有點低落。`, 1)
+        if (e <= 0)  this._sendNotif('visitor_sta_crit', `${vn} 精疲力竭了 😵`, `體力：${e}　他需要休息。`, 1)
 
-        if (s > 0 && s < 20) this._sendNotif('ichiro_sat_warn', 'Ichiro 餓了 🍜',       `飽食：${s}　幫他準備點吃的。`)
-        if (h > 0 && h < 20) this._sendNotif('ichiro_hlt_warn', 'Ichiro 健康警告 💊',   `健康：${h}　要照顧他。`)
-        if (m > 0 && m < 20) this._sendNotif('ichiro_moo_warn', 'Ichiro 心情很差 🌧',   `心情：${m}　去陪他說說話。`)
-        if (e > 0 && e < 15) this._sendNotif('ichiro_sta_warn', 'Ichiro 快沒體力了 😪', `體力：${e}　他需要休息。`)
+        if (s > 0 && s < 20) this._sendNotif('visitor_sat_warn', `${vn} 餓了 🍜`,       `飽食：${s}　幫他準備點吃的。`)
+        if (h > 0 && h < 20) this._sendNotif('visitor_hlt_warn', `${vn} 健康警告 💊`,   `健康：${h}　要照顧他。`)
+        if (m > 0 && m < 20) this._sendNotif('visitor_moo_warn', `${vn} 心情很差 🌧`,   `心情：${m}　去陪他說說話。`)
+        if (e > 0 && e < 15) this._sendNotif('visitor_sta_warn', `${vn} 快沒體力了 😪`, `體力：${e}　他需要休息。`)
       }
 
       // 第 14 天倒數通知
@@ -1622,14 +1887,14 @@ export const usePetStore = defineStore('pet', {
         if (this.isSick) jobs.push({ id: 'toki_sick', title: `${this.tokiName} 生病了 🤒`, body: '他有點不舒服，去照顧他。', delay: 1 })
       }
 
-      if (this.hasActiveVisitor && !this.sleepingIchiro) {
+      if (this.hasActiveVisitor && !this.isVisitorSleeping) {
         addStatJobs({
-          prefix: 'ichiro',
-          name: 'Ichiro',
-          sat: this.satIchiro,
-          hlt: this.hltIchiro,
-          moo: this.mooIchiro,
-          sta: this.staIchiro,
+          prefix: 'visitor',
+          name: this.activeVisitorName,
+          sat: this.visitorSat,
+          hlt: this.visitorHlt,
+          moo: this.visitorMoo,
+          sta: this.visitorSta,
           decay: { sat: DECAY.ichiroSat, hlt: DECAY.ichiroHlt, moo: DECAY.ichiroMoo, sta: DECAY.ichiroSta }
         })
       }
