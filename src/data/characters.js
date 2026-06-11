@@ -17,6 +17,12 @@ export const CHARACTERS = [
     tagline: '羞澀的文藝少年',
     available: true,
   },
+  {
+    id: 'ichiro',
+    name: 'Ichiro',
+    tagline: '體貼的鄰家青年',
+    available: true,
+  },
 ]
 
 // 選角畫面要顯示的鎖定佔位格數（不含已解鎖角色）
