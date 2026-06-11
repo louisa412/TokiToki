@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { getCharacterName, CHARACTERS } from '../data/characters'
+import { CHARACTER_DIALOGUE } from '../data/dialogue'
 
 function pairKey(a, b) { return [a, b].sort().join('-') }
 
@@ -191,66 +192,6 @@ export const NAP_MS = 10 * 60 * 1000
 export const BED_MS = 8  * 60 * 60 * 1000
 export const SICK_DISPLAY_MS = 8 * 60 * 60 * 1000
 
-const IDLE_MSGS = {
-  hungry: [
-    '我餓了。很明顯吧。',
-    '你不會沒發現。還是你裝的。',
-    '我現在沒什麼耐心。',
-    '你要幫就快一點。不要拖。',
-    '快點。',
-    '你想讓我餓死嗎。'
-  ],
-  sleepy: [
-    '我有點累。不是因為你。只是剛好。',
-    '現在聲音有點遠。',
-    '安靜一點。',
-    '...睏了。讓我睡。',
-    '眼睛睜不開...',
-    '反正我會先睡。',
-    '...體力快沒了。讓我休息。',
-    '現在不想動。認真的。',
-    '...去讓我睡一下。'
-  ],
-  sad: [
-    '你剛剛去哪了。',
-    '只是有點久。久到我開始覺得你不會來。',
-    '還好你最後還是出現了。',
-    '我沒有在等你。只是剛好沒別的事。',
-    '...算了，你來就好。',
-    '...無聊。...隨便。走開。'
-  ],
-  energetic: [
-    '你來了喔。還算準時。',
-    '我還以為你今天不會出現。',
-    '我沒在等你，只是剛好你來了。',
-    '時間過得很慢，你知道嗎？',
-    '你不在的時候時間更慢。',
-    '我本來沒打算說話的，但可以跟你小聊。',
-    '你看起來沒什麼變。還是一樣。',
-    '我剛剛在想事情。',
-    '哼。今天狀態不差。',
-    '...有什麼事嗎？',
-    '就這樣站著看嗎？'
-  ],
-  sick: [
-    '...頭有點重。別吵我。',
-    '...最近狀態不太好。',
-    '身體有點沉。',
-    '...不舒服。別問。',
-    '有點發燒的感覺。不嚴重。',
-    '...我沒有生病。',
-    '...現在不想動。',
-    '安靜點。頭很痛。'
-  ]
-}
-
-const NIGHT_MSGS = [
-  '這時間你還醒著。也太誇張。',
-  '我也是。所以才在這。',
-  '現在比較安靜。你不要突然走。',
-  '深夜的橫濱很安靜，好好享受。',
-  '這個時間點，我很喜歡。'
-]
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -867,6 +808,10 @@ export const usePetStore = defineStore('pet', {
       this.lastPatTime      = cs.lastPatTime    || 0
     },
 
+    _dlg() {
+      return CHARACTER_DIALOGUE[this.selectedCharacter] || CHARACTER_DIALOGUE.toki
+    },
+
     _syncTokiAffinity() {
       this.aff = clamp(this.aff, 0, 300)
       this.playerAffinityToki = this.aff
@@ -916,19 +861,21 @@ export const usePetStore = defineStore('pet', {
     idleUpdate() {
       if (this.reacting || this.inGame || this.sleeping) return
       // sick 圖只在健康低於 30 且持續 8 小時後顯示。
+      const dlg = this._dlg()
       if (this.tokiShowsSick) {
         this.setSprite('sick')
         if (this.hasActiveVisitor) this.visitorSprite = this._getIdleSpriteFor(this.activeVisitor)
-        this.setMsg(rnd(IDLE_MSGS.sick))
+        this.setMsg(rnd(dlg.idle?.sick || CHARACTER_DIALOGUE.toki.idle.sick))
         return
       }
       const sp = this._getIdleSprite()
       this.setSprite(sp)
       if (this.hasActiveVisitor) this.visitorSprite = this._getIdleSpriteFor(this.activeVisitor)
       if (this.nightMode && Math.random() < 0.4) {
-        this.setMsg(rnd(NIGHT_MSGS))
+        this.setMsg(rnd(dlg.night || CHARACTER_DIALOGUE.toki.night))
       } else {
-        this.setMsg(rnd(IDLE_MSGS[sp] || IDLE_MSGS.energetic))
+        const idleMsgs = dlg.idle || CHARACTER_DIALOGUE.toki.idle
+        this.setMsg(rnd(idleMsgs[sp] || idleMsgs.energetic || CHARACTER_DIALOGUE.toki.idle.energetic))
       }
     },
 
@@ -1014,7 +961,7 @@ export const usePetStore = defineStore('pet', {
       if (this.rapidClicks.length >= 5) {
         this.disturbedUntil = t + 10000
         this.rapidClicks    = []
-        this.react('disturbed', ['煩死了。', '你有完沒完。', '再點我打你。'], 2000)
+        this.react('disturbed', (this._dlg().actions?.patSpam || CHARACTER_DIALOGUE.toki.actions.patSpam), 2000)
         return true
       }
       return false
@@ -1030,6 +977,8 @@ export const usePetStore = defineStore('pet', {
       if (target === 'ichiro') return this.doIchiroAction(type)
       if (this.isDisturbed) return 'disturbed'
 
+      const act = (this._dlg().actions || CHARACTER_DIALOGUE.toki.actions)
+      const a = k => act[k] || CHARACTER_DIALOGUE.toki.actions[k]
       switch (type) {
         case 'pat': {
           const t = nowMs()
@@ -1038,39 +987,39 @@ export const usePetStore = defineStore('pet', {
           this.patCount++
           if (this.patCount > 3) {
             this.moo = clamp(this.moo - 10)
-            this.react('sad', ['煩了。別碰我。', '夠了。', '...滾開。'])
+            this.react('sad', a('patOverdo'))
           } else {
             this.moo = clamp(this.moo + 10)
             this.aff = clamp(this.aff + 8, 0, 300)
-            this.react('patted', ['...不許摸。', '說了不行...', '...隨你。'])
+            this.react('patted', a('pat'))
           }
           break
         }
         case 'praise':
           this.moo = clamp(this.moo + 18)
           this.aff = clamp(this.aff + 10, 0, 300)
-          this.react('praised', ['...那是當然的。', '廢話。', '不需要你說。'])
+          this.react('praised', a('praise'))
           break
         case 'poke':
           this.moo = clamp(this.moo - 5)
-          this.react('disturbed', ['...你幹嘛。', '戳什麼戳。', '找打？'])
+          this.react('disturbed', a('poke'))
           break
         case 'disturb':
           this.moo = clamp(this.moo - 15)
-          this.react('disturbed', ['你煩嗎。', '你有完沒完。', '...去。'])
+          this.react('disturbed', a('disturb'))
           break
         // ── 好感解鎖互動 ─────────────────────────────────────────────────
         case 'scarf':
           this.moo = clamp(this.moo + 8)
           this.aff = clamp(this.aff + 5, 0, 300)
-          this.react('happy', ['...知道了。', '多管閒事。', '...謝。'])
+          this.react('happy', a('scarf'))
           break
         case 'sit': {
           const cd = this.actionCooldowns['sit'] || 0
           if (nowMs() - cd < 6 * 3600 * 1000) return 'cooldown'
           this.actionCooldowns['sit'] = nowMs()
           this.aff = clamp(this.aff + 12, 0, 300)
-          this.react('energetic', ['...。', '你不說話也行。', '...就這樣就好。'])
+          this.react('energetic', a('sit'))
           break
         }
         case 'idle_together': {
@@ -1080,7 +1029,7 @@ export const usePetStore = defineStore('pet', {
           this.sta = clamp(this.sta + 12)
           this.moo = clamp(this.moo + 10)
           this.aff = clamp(this.aff + 6, 0, 300)
-          this.react('patted', ['...就這樣待著也行。', '安靜一點。不是叫你走。', '發呆而已。還不錯。'])
+          this.react('patted', a('idle_together'))
           break
         }
         case 'headphones': {
@@ -1090,13 +1039,13 @@ export const usePetStore = defineStore('pet', {
           this.moo = clamp(this.moo + 15)
           this.hlt = clamp(this.hlt + 5)
           this.aff = clamp(this.aff + 8, 0, 300)
-          this.react('happy', ['...不錯。', '這首我喜歡。', '你的品味還行。'])
+          this.react('happy', a('headphones'))
           break
         }
         case 'latenight':
           if (!this.nightMode) return 'not_night'
           this.aff = clamp(this.aff + 20, 0, 300)
-          this.react('praised', ['...你還在。', '深夜跟你待著，還行。', '...別走太早。'])
+          this.react('praised', a('latenight'))
           break
       }
       this.save()
@@ -1460,14 +1409,16 @@ export const usePetStore = defineStore('pet', {
       const sat = target !== 'toki' ? this.visitorSat : this.sat
       const sta = target !== 'toki' ? this.visitorSta : this.sta
       if (sat <= 0) {
-        this.react('hungry', ['餓著你想讓我玩？', '先給我吃的。'], 2000)
+        const gd = this._dlg().game || CHARACTER_DIALOGUE.toki.game
+        this.react('hungry', gd.hungry || CHARACTER_DIALOGUE.toki.game.hungry, 2000)
         if (target !== 'toki') this._addVisitorAffinity(-5)
         else this._addTokiAffinity(-5)
         return false
       }
       const staminaCost = GAME_STAMINA_COSTS[id] ?? 18
       if (sta < Math.max(5, staminaCost)) {
-        this.react('sleepy', ['...沒力氣了。讓我休息。', '累了。不想動。', '體力快沒了。去睡覺。'], 2000)
+        const gd = this._dlg().game || CHARACTER_DIALOGUE.toki.game
+        this.react('sleepy', gd.tired || CHARACTER_DIALOGUE.toki.game.tired, 2000)
         return false
       }
       this.inGame      = true
@@ -1524,21 +1475,22 @@ export const usePetStore = defineStore('pet', {
       this.checkupTier   = null
 
       // 依結果 tier 套用數值
+      const cu = this._dlg().checkup || CHARACTER_DIALOGUE.toki.checkup
       if (tier === 'good') {
         this.hlt = clamp(this.hlt + 15)
         this.moo = clamp(this.moo + 10)
         this.aff = clamp(this.aff + 12, 0, 300)
-        this.react('praised', ['...沒問題。我就說了。', '全部正常。當然。', '...嗯。健康。'], 2200)
+        this.react('praised', cu.good || CHARACTER_DIALOGUE.toki.checkup.good, 2200)
       } else if (tier === 'ok') {
         this.hlt = clamp(this.hlt + 20)
         this.moo = clamp(this.moo + 3)
         this.aff = clamp(this.aff + 8, 0, 300)
-        this.react('energetic', ['...要注意一下。', '沒大問題。', '...聽到了。'], 2200)
+        this.react('energetic', cu.ok || CHARACTER_DIALOGUE.toki.checkup.ok, 2200)
       } else {
         this.hlt = clamp(this.hlt + 25)
         this.moo = clamp(this.moo - 5)
         this.aff = clamp(this.aff + 5, 0, 300)
-        this.react('sad', ['...我知道了。', '...下次會注意。', '（沉默）'], 2200)
+        this.react('sad', cu.bad || CHARACTER_DIALOGUE.toki.checkup.bad, 2200)
       }
       this.save()
     },
@@ -1555,7 +1507,8 @@ export const usePetStore = defineStore('pet', {
         this.sick         = false
         this.sickUntil    = null
         this.hlt          = clamp(this.hlt - 5)
-        this.react('sad', ['...好多了。', '昨天狀態很差。', '...算了。'], 2200)
+        const sk = this._dlg().sickness || CHARACTER_DIALOGUE.toki.sickness
+        this.react('sad', sk.recovery || CHARACTER_DIALOGUE.toki.sickness.recovery, 2200)
         return
       }
 
@@ -1607,7 +1560,8 @@ export const usePetStore = defineStore('pet', {
       this.sleepEnd   = endAt
       this._sleepNow  = nowMs()
       this.setSprite('sleeping')
-      this.setMsg(type === 'nap' ? '...zz。叫我再叫。' : '...晚安。')
+      const sd = this._dlg().sleep || CHARACTER_DIALOGUE.toki.sleep
+      this.setMsg(type === 'nap' ? (sd.napStart || CHARACTER_DIALOGUE.toki.sleep.napStart) : (sd.bedStart || CHARACTER_DIALOGUE.toki.sleep.bedStart))
       this.save()
       return true
     },
@@ -1626,17 +1580,19 @@ export const usePetStore = defineStore('pet', {
       this.sleepStart = null
       this.currentSprite = 'energetic'
 
+      const sw = this._dlg().sleep || CHARACTER_DIALOGUE.toki.sleep
+      const s = k => sw[k] || CHARACTER_DIALOGUE.toki.sleep[k]
       if (forced && type === 'nap') {
         const frac = Math.min(sleptMs / NAP_MS, 1)
         this.moo = clamp(this.moo - 12)
         this.hlt = clamp(this.hlt + Math.round(8 * frac))
         this.sta = clamp(this.sta + Math.round(15 * frac))   // 沒睡完，部分體力回復
-        this.react('disturbed', ['你幹嘛。我還沒睡夠。', '...煩。叫什麼叫。', '吵死了。'], 2200)
+        this.react('disturbed', s('forcedNap'), 2200)
       } else if (type === 'nap') {
         this.moo = clamp(this.moo + 15)
         this.hlt = clamp(this.hlt + 8)
         this.sta = clamp(this.sta + 25)   // 小睡回體力
-        this.react('energetic', ['...勉強起來了。', '嗯。好一點了。', '睡了才知道累。'], 2200)
+        this.react('energetic', s('naturalNap'), 2200)
         this._sendNotif('sleepend', `${this.tokiName} 睡醒了 ☀️`, '小睡結束了，去看看他。', 1)
       } else {
         const frac = Math.min(sleptMs / BED_MS, 1)
@@ -1646,12 +1602,13 @@ export const usePetStore = defineStore('pet', {
         this.sat = clamp(this.sat - 20)
         const hrs = sleptMs / 3600000
         if (frac >= 0.9) {
-          this.react('energetic', ['...睡夠了。', '早。', '嗯。今天狀態不差。'], 2200)
+          this.react('energetic', s('fullSleep'), 2200)
           this._sendNotif('sleepend', `${this.tokiName} 睡醒了 ☀️`, '他已經起來了，去打個招呼吧。', 1)
         } else {
           const h  = Math.floor(hrs)
           const mn = Math.round((hrs - h) * 60)
-          this.react('sleepy', [`才睡${h > 0 ? h + '小時' : ''}${mn > 0 ? mn + '分' : ''}。`, '...還困著。', '太早了。'], 2200)
+          const timeStr = `才睡${h > 0 ? h + '小時' : ''}${mn > 0 ? mn + '分' : ''}。`
+          this.react('sleepy', [timeStr, ...s('partialSleep')], 2200)
           this._sendNotif('sleepend', `${this.tokiName} 睡醒了（睡不飽）`, `才睡了${h > 0 ? h + '小時' : ''}${mn > 0 ? mn + '分' : ''}，他有點不高興。`, 1)
         }
       }
