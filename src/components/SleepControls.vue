@@ -32,7 +32,7 @@
           class="sleep-btn nap-btn"
           :class="{ 'wake-btn': store.visitorSleeping === 'nap' }"
           :disabled="store.reacting || store.visitorSleeping === 'bed'"
-          @click="napClick(store.activeVisitor)"
+          @click="napClick('visitor')"
         >
           <div class="sleep-ico">😪</div>
           <div class="sleep-label">{{ napLabel('visitor') }}</div>
@@ -42,7 +42,7 @@
           class="sleep-btn bed-btn"
           :class="{ 'wake-btn': store.visitorSleeping === 'bed' }"
           :disabled="store.reacting || store.visitorSleeping === 'nap'"
-          @click="bedClick(store.activeVisitor)"
+          @click="bedClick('visitor')"
         >
           <div class="sleep-ico">🌙</div>
           <div class="sleep-label">{{ bedLabel('visitor') }}</div>
