@@ -51,13 +51,13 @@ export const FOODS = [
   },
   // ── 雙角色食物（Ichiro 來訪時限定）────────────────────────────────────
   { id: 'cake_duo', ico: '🍰', name: '蛋糕', sat: 18, hlt: -3, moo: 12, rel: 10, tokiAff: 6, ichiroAff: 8, duoOnly: true, sp: 'happy',
-    msgs: ['Ichiro：甜的很適合一起吃。', '{name}：...你切太大塊了。', '兩個人把蛋糕分完了。']
+    msgs: ['{visitor}：甜的很適合一起吃。', '{name}：...你切太大塊了。', '兩個人把蛋糕分完了。']
   },
   { id: 'steak_duo', ico: '🥩', name: '牛排', sat: 35, hlt: 2, moo: 10, rel: 14, tokiAff: 8, ichiroAff: 8, duoOnly: true, sp: 'energetic',
-    msgs: ['{name}：這個可以很好吃。', 'Ichiro：你喜歡五分熟？', '兩個人一起吃得很滿足。']
+    msgs: ['{name}：這個可以很好吃。', '{visitor}：你喜歡五分熟？', '兩個人一起吃得很滿足。']
   },
   { id: 'tea_duo', ico: '🫖', name: '雙人下午茶', sat: 16, hlt: 6, moo: 18, rel: 18, tokiAff: 10, ichiroAff: 12, duoOnly: true, sp: 'heart',
-    msgs: ['Ichiro：想跟你慢慢聊天。', '{name}：...別一直看我。', '茶香讓客廳變得柔和了一點。']
+    msgs: ['{visitor}：想跟你慢慢聊天。', '{name}：...別一直看我。', '茶香讓客廳變得柔和了一點。']
   }
 ]
 
@@ -129,22 +129,22 @@ export const UNLOCK_ACTIONS = [
 
 export const DUO_ACTIONS = [
   { id: 'snack', ico: '🍪', name: '一起吃點心', minRel: 0, tokiAff: 6, ichiroAff: 6, rel: 8, sat: 8, moo: 8,
-    msgs: ['{name}：...你不要搶最後一塊。', 'Ichiro：那就一人一半吧。', '兩個人分著吃，氣氛變好了。']
+    msgs: ['{name}：...你不要搶最後一塊。', '{visitor}：那就一人一半吧。', '兩個人分著吃，氣氛變好了。']
   },
   { id: 'chat', ico: '💬', name: '一起聊天', minRel: 25, tokiAff: 8, ichiroAff: 10, rel: 12, moo: 14,
-    msgs: ['Ichiro：原來你是這樣想的。', '{name}：我才沒說那麼多。', '你陪他們聊了一會兒。']
+    msgs: ['{visitor}：原來你是這樣想的。', '{name}：我才沒說那麼多。', '你陪他們聊了一會兒。']
   },
   { id: 'mini_game', ico: '🎮', name: '一起玩小遊戲', minRel: 60, tokiAff: 12, ichiroAff: 12, rel: 16, moo: 18, sta: -10,
-    msgs: ['{name}：再一局。', 'Ichiro：剛剛配合得很好。', '三個人玩得有點忘記時間。']
+    msgs: ['{name}：再一局。', '{visitor}：剛剛配合得很好。', '三個人玩得有點忘記時間。']
   }
 ]
 
 export const DUO_CARE_ACTIONS = [
   { id: 'rest_together', ico: '🛋', name: '一起休息', minRel: 0, tokiAff: 4, ichiroAff: 4, rel: 8, hlt: 6, sta: 12, moo: 8,
-    msgs: ['Ichiro：一起休息一下吧。', '{name}：...也不是不行。', '兩個人安靜地恢復了一點精神。']
+    msgs: ['{visitor}：一起休息一下吧。', '{name}：...也不是不行。', '兩個人安靜地恢復了一點精神。']
   },
   { id: 'check_each_other', ico: '🩺', name: '互相照看', minRel: 30, tokiAff: 6, ichiroAff: 8, rel: 12, hlt: 10, sta: 6, moo: 6,
-    msgs: ['Ichiro：你額頭好像不燙了。', '{name}：你也別逞強。', '兩個人互相確認了狀態。']
+    msgs: ['{visitor}：你額頭好像不燙了。', '{name}：你也別逞強。', '兩個人互相確認了狀態。']
   }
 ]
 
@@ -777,7 +777,11 @@ export const usePetStore = defineStore('pet', {
     // ── Sprite & message ─────────────────────────────────────────────────
 
     setSprite(name) { this.currentSprite = name },
-    setMsg(text)    { this.lastMsg = text.replace(/\{name\}/g, this.tokiName) },
+    setMsg(text)    {
+      this.lastMsg = text
+        .replace(/\{name\}/g, this.tokiName)
+        .replace(/\{visitor\}/g, this.activeVisitorName || 'Ichiro')
+    },
 
     setCharacter(id) {
       if (id === this.selectedCharacter) return
