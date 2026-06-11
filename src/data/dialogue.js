@@ -1,8 +1,46 @@
 // Character-specific dialogue for all playable characters.
 // To add a new character: add a key matching the id in characters.js and fill in all sections.
-// Missing characters automatically fall back to 'toki' dialogue at runtime.
+// Missing characters automatically fall back to 'toki' (main) or DEFAULT_VISITOR_DIALOGUE (visitor).
+//
+// Placeholders:
+//   {name}    → main character's name (selected character)
+//   {visitor} → visiting character's name
 
+// ── Visitor fallback ──────────────────────────────────────────────────────────
+// Used when a character has no visitor section defined yet.
+export const DEFAULT_VISITOR_DIALOGUE = {
+  actions: {
+    pat:           ['{visitor}：謝謝，感覺好多了。', '{name}：...你也太好哄了。', '{visitor} 微微笑了。'],
+    praise:        ['{visitor}：我會繼續努力。', '{visitor}：被你這樣說，有點高興。', '{name}：哼。'],
+    poke:          ['{visitor}：咦？怎麼了？', '{visitor} 有點困惑。', '{name}：你也會被戳喔。'],
+    disturb:       ['{visitor}：現在有點困擾。', '{name}：你終於懂了。', '氣氛微妙地冷掉了。'],
+    idle_together: ['{visitor}：偶爾一起發呆也很好。', '{name}：...安靜是優點。', '房間慢慢靜了下來。']
+  },
+  sleep: {
+    napStart:     '{visitor}：我休息一下。',
+    bedStart:     '{visitor}：晚安。',
+    forcedNap:    ['{visitor}：啊...我還沒睡醒。', '{visitor}：再一下就好。', '{name}：被吵醒很煩吧。'],
+    naturalNap:   ['{visitor}：睡了一下，舒服多了。', '{visitor}：謝謝你讓我休息。', '{name}：...醒了喔。'],
+    fullSleep:    ['{visitor}：早安，今天也請多指教。', '{visitor}：睡得很好。', '{name}：...精神不錯。'],
+    partialSleep: ['{visitor}：還有一點睏。', '{visitor}：是不是太早起來了？', '{name}：看吧，會累。']
+  },
+  arrival:    ['{visitor}：我來了。', '{name}：...進來吧。', '今天開始是雙角色模式。'],
+  departure:  ['{visitor} 回去了。', '{name}：...突然安靜下來了。', '下次再叫他來。'],
+  firstVisit: ['{visitor}：打擾了。今天可以一起待著嗎？', '{name}：...隨便。你都來了。', '{visitor} 來了。'],
+  food: {
+    default:    ['{visitor}：謝謝，很好吃。', '{name}：...你吃得很認真。', '{visitor} 吃得很滿足。'],
+    healthFood: ['{visitor}：謝謝，這個剛剛好。', '{name}：...吃健康的啊。', '{visitor} 認真地吃完了。']
+  },
+  care: {
+    refused:  ['{visitor}：我真的沒事，不用擔心。', '{name}：被照顧太多了。', '{visitor} 有點不好意思。'],
+    accepted: ['{visitor}：有你幫忙，安心多了。', '{name}：...照顧得還行。', '{visitor} 感謝地點了點頭。']
+  }
+}
+
+// ── Per-character dialogue ─────────────────────────────────────────────────────
 export const CHARACTER_DIALOGUE = {
+
+  // ── Toki（傲嬌電子寵物）──────────────────────────────────────────────────────
   toki: {
     idle: {
       hungry: [
@@ -95,22 +133,85 @@ export const CHARACTER_DIALOGUE = {
     game: {
       hungry: ['餓著你想讓我玩？', '先給我吃的。'],
       tired:  ['...沒力氣了。讓我休息。', '累了。不想動。', '體力快沒了。去睡覺。']
+    },
+    // Toki as visitor
+    visitor: {
+      actions: {
+        pat:           ['{visitor}：...不許摸。（但好像不討厭）', '{name}：你臉都紅了。', '{visitor} 別過臉去。'],
+        praise:        ['{visitor}：...那是當然的。', '{name}：你認可他了？', '{visitor}：哼，廢話。'],
+        poke:          ['{visitor}：...你幹嘛。', '{name}：戳他做什麼。', '{visitor}：找打？'],
+        disturb:       ['{visitor}：你煩嗎。', '{name}：...對不起。', '{visitor} 冷冷地別開臉。'],
+        idle_together: ['{visitor}：...就這樣待著也行。', '{name}：嗯，不錯。', '兩個人沉默地待著，氣氛意外地好。']
+      },
+      sleep: {
+        napStart:     '{visitor}：...zz。別吵。',
+        bedStart:     '{visitor}：...晚安。',
+        forcedNap:    ['{visitor}：你幹嘛。我還沒睡夠。', '{name}：拍拍你的肩。', '{visitor}：...煩死了。'],
+        naturalNap:   ['{visitor}：...勉強起來了。', '{name}：睡得怎樣？', '{visitor}：嗯。好一點了。'],
+        fullSleep:    ['{visitor}：...睡夠了。', '{name}：早。', '{visitor}：哼。今天狀態不差。'],
+        partialSleep: ['{visitor}：...還困著。', '{name}：再睡一下？', '{visitor}：太早了。']
+      },
+      arrival:    ['{visitor}：...你在啊。', '{name}：進來吧。', '{visitor} 若無其事地走進來了。'],
+      departure:  ['{visitor}：...我走了。', '{name}：慢走。', '門輕輕關上了。'],
+      firstVisit: ['{visitor}：...打擾了。隨便待著。', '{name}：...隨便。', '{visitor} 裝作沒事地進來了。'],
+      food: {
+        default:    ['{visitor}：...還可以。', '{name}：他喜歡。', '{visitor}：別得意。'],
+        healthFood: ['{visitor}：...（沉默地吃完）', '{name}：你還是吃了。', '{visitor}：哼。']
+      },
+      care: {
+        refused:  ['{visitor}：我沒事。別多管閒事。', '{name}：...真的？', '{visitor}：退開。'],
+        accepted: ['{visitor}：...謝了。（小聲）', '{name}：不客氣。', '{visitor} 悄悄鬆了口氣。']
+      }
     }
   },
 
+  // ── Kyouji（輕浮的黑道大叔）──────────────────────────────────────────────────
   kyouji: {
-    // TODO: fill in Kyouji's dialogue (輕浮的黑道大叔)
-    // Falls back to toki if left empty
+    // TODO: fill in Kyouji's main character dialogue
+    visitor: {
+      // TODO: fill in Kyouji's visitor dialogue
+    }
   },
 
+  // ── Satomi（羞澀的文藝少年）──────────────────────────────────────────────────
   satomi: {
-    // TODO: fill in Satomi's dialogue (羞澀的文藝少年)
-    // Falls back to toki if left empty
+    // TODO: fill in Satomi's main character dialogue
+    visitor: {
+      // TODO: fill in Satomi's visitor dialogue
+    }
   },
 
+  // ── Ichiro（體貼的鄰家青年）──────────────────────────────────────────────────
   ichiro: {
-    // TODO: fill in Ichiro's dialogue as main character (體貼的鄰家青年)
-    // Falls back to toki if left empty
-    // Note: Ichiro's dialogue as a *visitor* NPC is handled separately in pet.js
+    // TODO: fill in Ichiro's main character dialogue
+    // Ichiro as visitor (his established warm/considerate personality)
+    visitor: {
+      actions: {
+        pat:           ['{visitor}：謝謝，感覺好多了。', '{name}：...你也太好哄了。', '{visitor} 微微笑了。'],
+        praise:        ['{visitor}：我會繼續努力的。', '{visitor}：被你這樣說，有點高興。', '{name}：哼。'],
+        poke:          ['{visitor}：咦？怎麼了？', '{visitor} 有點困惑。', '{name}：你也會被戳喔。'],
+        disturb:       ['{visitor}：現在有點困擾……', '{name}：你終於懂了。', '氣氛微妙地冷掉了。'],
+        idle_together: ['{visitor}：偶爾一起發呆也很好。', '{name}：...安靜是優點。', '房間慢慢靜了下來。']
+      },
+      sleep: {
+        napStart:     '{visitor}：我休息一下。',
+        bedStart:     '{visitor}：晚安，明天見。',
+        forcedNap:    ['{visitor}：啊...我還沒睡醒。', '{visitor}：再一下就好。', '{name}：被吵醒很煩吧。'],
+        naturalNap:   ['{visitor}：睡了一下，舒服多了。', '{visitor}：謝謝你讓我休息。', '{name}：...醒了喔。'],
+        fullSleep:    ['{visitor}：早安，今天也請多指教。', '{visitor}：睡得很好。', '{name}：...精神不錯。'],
+        partialSleep: ['{visitor}：還有一點睏。', '{visitor}：是不是太早起來了？', '{name}：看吧，會累。']
+      },
+      arrival:    ['{visitor}：我來了。', '{name}：...進來吧。', '{visitor} 帶著微笑走進來了。'],
+      departure:  ['{visitor}：那我先回去了。', '{name}：...嗯。', '{visitor} 回去了。'],
+      firstVisit: ['{visitor}：打擾了。今天可以一起待著嗎？', '{name}：...隨便。你都來了。', '{visitor} 來了。'],
+      food: {
+        default:    ['{visitor}：謝謝，很好吃。', '{name}：...你吃得很認真。', '{visitor} 吃得很滿足。'],
+        healthFood: ['{visitor}：謝謝，這個剛剛好。', '{name}：...你吃得很認真。', '{visitor} 認真地吃完了。']
+      },
+      care: {
+        refused:  ['{visitor}：我真的沒事，不用擔心。', '{name}：被照顧太多了。', '{visitor} 有點不好意思。'],
+        accepted: ['{visitor}：有你幫忙，安心多了。', '{name}：...照顧得還行。', '{visitor} 感謝地點了點頭。']
+      }
+    }
   }
 }

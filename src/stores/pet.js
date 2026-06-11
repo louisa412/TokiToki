@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { getCharacterName, CHARACTERS } from '../data/characters'
-import { CHARACTER_DIALOGUE } from '../data/dialogue'
+import { CHARACTER_DIALOGUE, DEFAULT_VISITOR_DIALOGUE } from '../data/dialogue'
 
 function pairKey(a, b) { return [a, b].sort().join('-') }
 
@@ -812,6 +812,25 @@ export const usePetStore = defineStore('pet', {
       return CHARACTER_DIALOGUE[this.selectedCharacter] || CHARACTER_DIALOGUE.toki
     },
 
+    _visitorDlg() {
+      const vid = this.activeVisitor
+      if (!vid) return DEFAULT_VISITOR_DIALOGUE
+      return CHARACTER_DIALOGUE[vid]?.visitor || DEFAULT_VISITOR_DIALOGUE
+    },
+
+    // Look up a nested key in visitor dialogue with fallback to DEFAULT.
+    // e.g. _vd('actions','pat')  _vd('sleep','forcedNap')  _vd('food','default')
+    _vd(section, key) {
+      const vd = this._visitorDlg()
+      return (vd[section]?.[key]) ?? (DEFAULT_VISITOR_DIALOGUE[section]?.[key]) ?? []
+    },
+
+    // Top-level visitor dialogue key with fallback.
+    _vt(key) {
+      const vd = this._visitorDlg()
+      return vd[key] ?? DEFAULT_VISITOR_DIALOGUE[key] ?? []
+    },
+
     _syncTokiAffinity() {
       this.aff = clamp(this.aff, 0, 300)
       this.playerAffinityToki = this.aff
@@ -1055,7 +1074,6 @@ export const usePetStore = defineStore('pet', {
       if (this.reacting) return
       if (!this.hasActiveVisitor) return 'need_visitor'
       const vid = this.activeVisitor
-      const visName = vid === 'ichiro' ? 'Ichiro' : getCharacterName(vid)
       const addVisitorMoo = (v) => {
         if (vid === 'ichiro') this.mooIchiro = clamp(this.mooIchiro + v)
         else { const cs = this.charactersState[vid]; if (cs) cs.moo = clamp(cs.moo + v) }
@@ -1067,28 +1085,23 @@ export const usePetStore = defineStore('pet', {
       switch (type) {
         case 'pat':
           addVisitorMoo(12); this._addVisitorAffinity(9)
-          this.reactPair(this.currentSprite, 'patted', 'hearts', [
-            `${visName}：謝謝，感覺好多了。`, '{name}：...你也太好哄了。', `${visName} 微微笑了。`])
+          this.reactPair(this.currentSprite, 'patted', 'hearts', this._vd('actions', 'pat'))
           break
         case 'praise':
           addVisitorMoo(16); this._addVisitorAffinity(10)
-          this.reactPair(this.currentSprite, 'happy', 'hearts', [
-            `${visName}：我會繼續努力。`, `${visName}：被你這樣說，有點高興。`, '{name}：哼。'])
+          this.reactPair(this.currentSprite, 'happy', 'hearts', this._vd('actions', 'praise'))
           break
         case 'poke':
           addVisitorMoo(-4)
-          this.reactPair(this.currentSprite, 'helpless', 'near', [
-            `${visName}：咦？怎麼了？`, `${visName} 有點困惑。`, '{name}：你也會被戳喔。'])
+          this.reactPair(this.currentSprite, 'helpless', 'near', this._vd('actions', 'poke'))
           break
         case 'disturb':
           addVisitorMoo(-12); this._addVisitorAffinity(-3)
-          this.reactPair('disturbed', 'impatient', 'near', [
-            `${visName}：現在有點困擾。`, '{name}：你終於懂了。', '氣氛微妙地冷掉了。'])
+          this.reactPair('disturbed', 'impatient', 'near', this._vd('actions', 'disturb'))
           break
         case 'idle_together':
           addVisitorSta(12); addVisitorMoo(10); this._addVisitorAffinity(6)
-          this.reactPair(this.currentSprite, 'happy', 'near', [
-            `${visName}：偶爾一起發呆也很好。`, '{name}：...安靜是優點。', '房間慢慢靜了下來。'])
+          this.reactPair(this.currentSprite, 'happy', 'near', this._vd('actions', 'idle_together'))
           break
         default:
           return false
@@ -1101,12 +1114,7 @@ export const usePetStore = defineStore('pet', {
       this.visitorUnlocked = true
       this.activeVisitor = id
       this.visitorSprite = 'happy'
-      const visName = id === 'ichiro' ? 'Ichiro' : getCharacterName(id)
-      this.reactPair('happy', 'happy', 'hearts', [
-        `${visName}：打擾了。今天可以一起待著嗎？`,
-        '{name}：...隨便。你都來了。',
-        `${visName} 來了。`
-      ], 2600)
+      this.reactPair('happy', 'happy', 'hearts', this._vt('firstVisit'), 2600)
       this.save()
     },
 
@@ -1116,19 +1124,15 @@ export const usePetStore = defineStore('pet', {
       this.activeVisitor = id
       this.visitorSprite = 'happy'
       this._sleepNowVisitor = 0
-      const visName = id === 'ichiro' ? 'Ichiro' : getCharacterName(id)
-      this.reactPair('energetic', 'happy', 'near', [
-        `${visName}：我來了。`,
-        '{name}：...進來吧。',
-        '今天開始是雙角色模式。'
-      ], 2400)
+      this.reactPair('energetic', 'happy', 'near', this._vt('arrival'), 2400)
       this.save()
       return true
     },
 
     sendVisitorHome() {
       if (!this.hasActiveVisitor) return false
-      const visName = this.activeVisitorName
+      // capture dialogue while activeVisitor is still set so {visitor} placeholder resolves
+      this.react('energetic', this._vt('departure'), 2200)
       if (this.activeVisitor === 'ichiro') {
         this.sleepingIchiro   = null
         this.sleepEndIchiro   = null
@@ -1140,7 +1144,6 @@ export const usePetStore = defineStore('pet', {
       }
       this.activeVisitor = null
       this.pairEffect = null
-      this.react('energetic', [`${visName} 回去了。`, '{name}：...突然安靜下來了。', '下次再叫他來。'], 2200)
       this.save()
       return true
     },
@@ -1241,7 +1244,6 @@ export const usePetStore = defineStore('pet', {
       if (this.reacting) return
       if (!this.hasActiveVisitor) return 'need_visitor'
       const vid = this.activeVisitor
-      const visName = vid === 'ichiro' ? 'Ichiro' : getCharacterName(vid)
       const f = FOODS.find(x => x.id === id)
       if (!f) return
       if (f.duoOnly) return 'duo_only'
@@ -1272,15 +1274,11 @@ export const usePetStore = defineStore('pet', {
         const aff = getVisAff()
         const tier = aff >= 200 ? 2 : aff >= 100 ? 1 : 0
         addVisitorStats(f.sat || 0, f.hlt || 0, f.sta || 0, f.mooTiers[tier], f.affTiers[tier])
-        this.reactPair(this.currentSprite, 'helpless', 'near', [
-          `${visName} 吃了${f.name}。`, `${visName}：謝謝，這個剛剛好。`, '{name}：...你吃得很認真。'
-        ], 2400)
+        this.reactPair(this.currentSprite, 'helpless', 'near', this._vd('food', 'healthFood'), 2400)
       } else {
         addVisitorStats(f.sat || 0, f.hlt || 0, f.sta || 0, f.moo || 0, f.aff || 0)
         const sprite = f.sp === 'sad' ? 'helpless' : f.sp
-        this.reactPair(this.currentSprite, sprite, 'near', [
-          `${visName} 吃了${f.name}。`, `${visName}：謝謝，很好吃。`, '{name}：...你吃得很認真。'
-        ], 2400)
+        this.reactPair(this.currentSprite, sprite, 'near', this._vd('food', 'default'), 2400)
       }
       this.save()
       return true
@@ -1340,7 +1338,6 @@ export const usePetStore = defineStore('pet', {
       if (this.reacting) return
       if (!this.hasActiveVisitor) return 'need_visitor'
       const vid = this.activeVisitor
-      const visName = vid === 'ichiro' ? 'Ichiro' : getCharacterName(vid)
       const item = CARE_ITEMS.find(x => x.id === id)
       if (!item) return
 
@@ -1349,8 +1346,7 @@ export const usePetStore = defineStore('pet', {
         if (vid === 'ichiro') this.mooIchiro = clamp(this.mooIchiro - 6)
         else { const cs = this.charactersState[vid]; if (cs) cs.moo = clamp(cs.moo - 6) }
         this._addVisitorAffinity(-2)
-        this.reactPair(this.currentSprite, 'helpless', 'near', [
-          `${visName}：我真的沒事，不用擔心。`, '{name}：被照顧太多了。', `${visName} 有點不好意思。`])
+        this.reactPair(this.currentSprite, 'helpless', 'near', this._vd('care', 'refused'))
         return 'refused'
       }
 
@@ -1382,11 +1378,7 @@ export const usePetStore = defineStore('pet', {
         if (cs) { cs.hlt = clamp(cs.hlt + (item.hlt || 0)); cs.moo = clamp(cs.moo + (item.moo || 0)) }
       }
       this._addVisitorAffinity(item.aff || 0)
-      this.reactPair(this.currentSprite, 'happy', 'hearts', [
-        `${visName} 做了${item.name}。`,
-        `${visName}：有你幫忙，安心多了。`,
-        '{name}：...照顧得還行。'
-      ], 2400)
+      this.reactPair(this.currentSprite, 'happy', 'hearts', this._vd('care', 'accepted'), 2400)
       this.save()
       return true
     },
@@ -1533,7 +1525,6 @@ export const usePetStore = defineStore('pet', {
       if (target !== 'toki') {
         if (!this.hasActiveVisitor) return 'need_visitor'
         const vid = this.activeVisitor
-        const visName = vid === 'ichiro' ? 'Ichiro' : getCharacterName(vid)
         if (vid === 'ichiro') {
           if (this.sleepingIchiro) return
           this.sleepingIchiro   = type
@@ -1549,7 +1540,8 @@ export const usePetStore = defineStore('pet', {
           this._sleepNowVisitor = nowMs()
         }
         this.visitorSprite = 'sleeping'
-        this.setMsg(type === 'nap' ? `${visName}：我休息一下。` : `${visName}：晚安。`)
+        const vslp = this._visitorDlg().sleep || DEFAULT_VISITOR_DIALOGUE.sleep
+        this.setMsg(type === 'nap' ? (vslp.napStart || DEFAULT_VISITOR_DIALOGUE.sleep.napStart) : (vslp.bedStart || DEFAULT_VISITOR_DIALOGUE.sleep.bedStart))
         this.save()
         return true
       }
@@ -1631,12 +1623,12 @@ export const usePetStore = defineStore('pet', {
         this.hltIchiro = clamp(this.hltIchiro + Math.round(6 * frac))
         this.staIchiro = clamp(this.staIchiro + Math.round(15 * frac))
         this._addIchiroAffinity(-2)
-        this.reactPair(this.currentSprite, 'impatient', 'near', ['Ichiro：啊...我還沒睡醒。', 'Ichiro：再一下就好。', '{name}：被吵醒很煩吧。'], 2200)
+        this.reactPair(this.currentSprite, 'impatient', 'near', this._vd('sleep', 'forcedNap'), 2200)
       } else if (type === 'nap') {
         this.mooIchiro = clamp(this.mooIchiro + 14)
         this.hltIchiro = clamp(this.hltIchiro + 8)
         this.staIchiro = clamp(this.staIchiro + 25)
-        this.reactPair(this.currentSprite, 'happy', 'hearts', ['Ichiro：睡了一下，舒服多了。', 'Ichiro：謝謝你讓我休息。', '{name}：...醒了喔。'], 2200)
+        this.reactPair(this.currentSprite, 'happy', 'hearts', this._vd('sleep', 'naturalNap'), 2200)
       } else {
         const frac = Math.min(sleptMs / BED_MS, 1)
         this.mooIchiro = clamp(this.mooIchiro + Math.round(20 * frac))
@@ -1644,9 +1636,9 @@ export const usePetStore = defineStore('pet', {
         this.staIchiro = clamp(this.staIchiro + Math.round(60 * frac))
         this.satIchiro = clamp(this.satIchiro - 18)
         if (frac >= 0.9) {
-          this.reactPair(this.currentSprite, 'happy', 'hearts', ['Ichiro：早安，今天也請多指教。', 'Ichiro：睡得很好。', '{name}：...精神不錯。'], 2200)
+          this.reactPair(this.currentSprite, 'happy', 'hearts', this._vd('sleep', 'fullSleep'), 2200)
         } else {
-          this.reactPair(this.currentSprite, 'helpless', 'near', ['Ichiro：還有一點睏。', 'Ichiro：是不是太早起來了？', '{name}：看吧，會累。'], 2200)
+          this.reactPair(this.currentSprite, 'helpless', 'near', this._vd('sleep', 'partialSleep'), 2200)
         }
       }
       this.save()
@@ -1657,7 +1649,6 @@ export const usePetStore = defineStore('pet', {
       if (!cs?.sleeping) return
       const type = cs.sleeping
       const sleptMs = nowMs() - (cs.sleepStart || nowMs())
-      const visName = getCharacterName(vid)
 
       cs.sleeping   = null
       cs.sleepEnd   = null
@@ -1671,12 +1662,10 @@ export const usePetStore = defineStore('pet', {
         cs.hlt = clamp(cs.hlt + Math.round(6 * frac))
         cs.sta = clamp(cs.sta + Math.round(15 * frac))
         this._addVisitorAffinity(-2)
-        this.reactPair(this.currentSprite, 'impatient', 'near', [
-          `${visName}：啊...我還沒睡醒。`, `${visName}：再一下就好。`, '{name}：被吵醒很煩吧。'], 2200)
+        this.reactPair(this.currentSprite, 'impatient', 'near', this._vd('sleep', 'forcedNap'), 2200)
       } else if (type === 'nap') {
         cs.moo = clamp(cs.moo + 14); cs.hlt = clamp(cs.hlt + 8); cs.sta = clamp(cs.sta + 25)
-        this.reactPair(this.currentSprite, 'happy', 'hearts', [
-          `${visName}：睡了一下，舒服多了。`, `${visName}：謝謝你讓我休息。`, '{name}：...醒了喔。'], 2200)
+        this.reactPair(this.currentSprite, 'happy', 'hearts', this._vd('sleep', 'naturalNap'), 2200)
       } else {
         const frac = Math.min(sleptMs / BED_MS, 1)
         cs.moo = clamp(cs.moo + Math.round(20 * frac))
@@ -1684,11 +1673,9 @@ export const usePetStore = defineStore('pet', {
         cs.sta = clamp(cs.sta + Math.round(60 * frac))
         cs.sat = clamp(cs.sat - 18)
         if (frac >= 0.9) {
-          this.reactPair(this.currentSprite, 'happy', 'hearts', [
-            `${visName}：早安，今天也請多指教。`, `${visName}：睡得很好。`, '{name}：...精神不錯。'], 2200)
+          this.reactPair(this.currentSprite, 'happy', 'hearts', this._vd('sleep', 'fullSleep'), 2200)
         } else {
-          this.reactPair(this.currentSprite, 'helpless', 'near', [
-            `${visName}：還有一點睏。`, `${visName}：是不是太早起來了？`, '{name}：看吧，會累。'], 2200)
+          this.reactPair(this.currentSprite, 'helpless', 'near', this._vd('sleep', 'partialSleep'), 2200)
         }
       }
       this.save()
