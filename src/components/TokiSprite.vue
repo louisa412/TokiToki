@@ -10,7 +10,7 @@
           class="sprite vis"
           :class="{ bk: bouncing }"
           :src="spriteSrc"
-          alt="Toki"
+          :alt="charName"
           @load="onLoad"
           @error="onError"
           @click="onSpriteClick"

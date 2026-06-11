@@ -775,7 +775,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     _targetName(target) {
-      return target === 'ichiro' ? 'Ichiro' : target === 'duo' ? 'Toki 和 Ichiro' : 'Toki'
+      return target === 'ichiro' ? 'Ichiro' : target === 'duo' ? `${this.tokiName} 和 Ichiro` : this.tokiName
     },
 
     idleUpdate() {
@@ -1370,7 +1370,7 @@ export const usePetStore = defineStore('pet', {
         this.sick      = true
         this.sickUntil = nowMs() + 24 * 60 * 60 * 1000
         this.setMsg('...頭有點重。別吵我。')
-        this._sendNotif('sick', 'Toki 生病了 🤒', '他好像有點不舒服，去照顧他。', 1)
+        this._sendNotif('sick', `${this.tokiName} 生病了 🤒`, '他好像有點不舒服，去照顧他。', 1)
       }
     },
 
@@ -1426,7 +1426,7 @@ export const usePetStore = defineStore('pet', {
         this.hlt = clamp(this.hlt + 8)
         this.sta = clamp(this.sta + 25)   // 小睡回體力
         this.react('energetic', ['...勉強起來了。', '嗯。好一點了。', '睡了才知道累。'], 2200)
-        this._sendNotif('sleepend', 'Toki 睡醒了 ☀️', '小睡結束了，去看看他。', 1)
+        this._sendNotif('sleepend', `${this.tokiName} 睡醒了 ☀️`, '小睡結束了，去看看他。', 1)
       } else {
         const frac = Math.min(sleptMs / BED_MS, 1)
         this.moo = clamp(this.moo + Math.round(20 * frac))
@@ -1436,12 +1436,12 @@ export const usePetStore = defineStore('pet', {
         const hrs = sleptMs / 3600000
         if (frac >= 0.9) {
           this.react('energetic', ['...睡夠了。', '早。', '嗯。今天狀態不差。'], 2200)
-          this._sendNotif('sleepend', 'Toki 睡醒了 ☀️', '他已經起來了，去打個招呼吧。', 1)
+          this._sendNotif('sleepend', `${this.tokiName} 睡醒了 ☀️`, '他已經起來了，去打個招呼吧。', 1)
         } else {
           const h  = Math.floor(hrs)
           const mn = Math.round((hrs - h) * 60)
           this.react('sleepy', [`才睡${h > 0 ? h + '小時' : ''}${mn > 0 ? mn + '分' : ''}。`, '...還困著。', '太早了。'], 2200)
-          this._sendNotif('sleepend', 'Toki 睡醒了（睡不飽）', `才睡了${h > 0 ? h + '小時' : ''}${mn > 0 ? mn + '分' : ''}，他有點不高興。`, 1)
+          this._sendNotif('sleepend', `${this.tokiName} 睡醒了（睡不飽）`, `才睡了${h > 0 ? h + '小時' : ''}${mn > 0 ? mn + '分' : ''}，他有點不高興。`, 1)
         }
       }
       this.save()
@@ -1493,8 +1493,8 @@ export const usePetStore = defineStore('pet', {
         const rem = this.sleepRemaining
         if (!this.reacting) {
           this.setMsg(this.sleeping === 'nap'
-            ? `Toki：...zz  剩 ${_fmtTime(rem)}`
-            : `Toki：...zzz  剩 ${_fmtTime(rem)}`)
+            ? `${this.tokiName}：...zz  剩 ${_fmtTime(rem)}`
+            : `${this.tokiName}：...zzz  剩 ${_fmtTime(rem)}`)
         }
         if (rem <= 0) this.wakeUp(false, 'toki')
       }
@@ -1520,16 +1520,16 @@ export const usePetStore = defineStore('pet', {
         const m = Math.round(this.moo)
         const e = Math.round(this.sta)
 
-        if (s <= 0)  this._sendNotif('toki_sat_crit', 'Toki 餓壞了 🚨',      `飽食：${s}　「...我不餓。」（他在說謊）`, 1)
-        if (h <= 0)  this._sendNotif('toki_hlt_crit', 'Toki 健康亮紅燈 🆘',  `健康：${h}　他的狀態非常糟糕。`, 1)
-        if (m <= 0)  this._sendNotif('toki_moo_crit', 'Toki 快爆發了 💢',    `心情：${m}　「別管我。」他心情差到極點了。`, 1)
-        if (e <= 0)  this._sendNotif('toki_sta_crit', 'Toki 精疲力竭了 😵',  `體力：${e}　他撐不住了，快讓他睡覺。`, 1)
-        if (this.isSick) this._sendNotif('toki_sick', 'Toki 生病了 🤒', '他有點不舒服，去照顧他。')
+        if (s <= 0)  this._sendNotif('toki_sat_crit', `${this.tokiName} 餓壞了 🚨`,      `飽食：${s}　「...我不餓。」（他在說謊）`, 1)
+        if (h <= 0)  this._sendNotif('toki_hlt_crit', `${this.tokiName} 健康亮紅燈 🆘`,  `健康：${h}　他的狀態非常糟糕。`, 1)
+        if (m <= 0)  this._sendNotif('toki_moo_crit', `${this.tokiName} 快爆發了 💢`,    `心情：${m}　「別管我。」他心情差到極點了。`, 1)
+        if (e <= 0)  this._sendNotif('toki_sta_crit', `${this.tokiName} 精疲力竭了 😵`,  `體力：${e}　他撐不住了，快讓他睡覺。`, 1)
+        if (this.isSick) this._sendNotif('toki_sick', `${this.tokiName} 生病了 🤒`, '他有點不舒服，去照顧他。')
 
-        if (s > 0 && s < 20) this._sendNotif('toki_sat_warn', 'Toki 餓了 🍜',       `飽食：${s}　快去餵他！`)
-        if (h > 0 && h < 20) this._sendNotif('toki_hlt_warn', 'Toki 健康警告 💊',   `健康：${h}　要照顧他。`)
-        if (m > 0 && m < 20) this._sendNotif('toki_moo_warn', 'Toki 心情很差 😤',   `心情：${m}　去陪他說說話。`)
-        if (e > 0 && e < 15) this._sendNotif('toki_sta_warn', 'Toki 快沒體力了 😪', `體力：${e}　他需要休息了。`)
+        if (s > 0 && s < 20) this._sendNotif('toki_sat_warn', `${this.tokiName} 餓了 🍜`,       `飽食：${s}　快去餵他！`)
+        if (h > 0 && h < 20) this._sendNotif('toki_hlt_warn', `${this.tokiName} 健康警告 💊`,   `健康：${h}　要照顧他。`)
+        if (m > 0 && m < 20) this._sendNotif('toki_moo_warn', `${this.tokiName} 心情很差 😤`,   `心情：${m}　去陪他說說話。`)
+        if (e > 0 && e < 15) this._sendNotif('toki_sta_warn', `${this.tokiName} 快沒體力了 😪`, `體力：${e}　他需要休息了。`)
       }
 
       if (this.hasActiveVisitor && !this.sleepingIchiro) {
