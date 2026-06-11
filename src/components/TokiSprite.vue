@@ -15,7 +15,7 @@
           @error="onError"
           @click="onSpriteClick"
         />
-        <div v-if="store.hasActiveVisitor" class="name-tag">Toki</div>
+        <div v-if="store.hasActiveVisitor" class="name-tag">{{ charName }}</div>
         <div class="zzz toki-zzz" :class="{ on: store.isSleeping }">z<br>z<br>z</div>
       </div>
       <Transition name="visitor">
@@ -45,6 +45,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { usePetStore } from '../stores/pet'
+import { CHARACTERS } from '../data/characters'
 
 const store    = usePetStore()
 const bouncing = ref(false)
@@ -71,13 +72,18 @@ function normalizeSpriteName(name) {
   return SPRITE_ALIASES[name] || name
 }
 
+const charName = computed(() =>
+  CHARACTERS.find(c => c.id === store.selectedCharacter)?.name ?? 'Toki'
+)
+
 // 優先級：睡眠 > 生病（非反應中）> 一般 sprite
 const spriteSrc = computed(() => {
-  if (store.isSleeping) return `${import.meta.env.BASE_URL}images/toki/sleeping.png`
-  if (store.tokiShowsSick && !store.reacting) return `${import.meta.env.BASE_URL}images/toki/sick.png`
+  const char = store.selectedCharacter || 'toki'
+  if (store.isSleeping) return `${import.meta.env.BASE_URL}images/${char}/sleeping.png`
+  if (store.tokiShowsSick && !store.reacting) return `${import.meta.env.BASE_URL}images/${char}/sick.png`
   const rawName = SPRITE_NAMES.has(store.currentSprite) ? store.currentSprite : 'happy'
   const name = normalizeSpriteName(rawName)
-  return `${import.meta.env.BASE_URL}images/toki/${name}.png`
+  return `${import.meta.env.BASE_URL}images/${char}/${name}.png`
 })
 
 const visitorSpriteSrc = computed(() => {
@@ -104,8 +110,9 @@ function onLoad(e) {
 }
 
 function onError(e) {
-  if (e.target.src.includes('/images/toki/')) {
-    e.target.src = `${import.meta.env.BASE_URL}images/toki/happy.png`
+  const char = store.selectedCharacter || 'toki'
+  if (e.target.src.includes(`/images/${char}/`)) {
+    e.target.src = `${import.meta.env.BASE_URL}images/${char}/happy.png`
     return
   }
   if (e.target.src.includes('/images/ichiro/')) {

@@ -287,6 +287,7 @@ export const usePetStore = defineStore('pet', {
     currentSprite: 'energetic',
     lastMsg: '橫濱，本大爺回來了。',
     nightMode: false,
+    selectedCharacter: 'toki',
 
     // Interaction state
     reacting: false,
@@ -412,6 +413,7 @@ export const usePetStore = defineStore('pet', {
           checkupDone:     this.checkupDone,
           inventory:       this.inventory,
           locationMemory:  this.locationMemory,
+          selectedCharacter: this.selectedCharacter,
           savedAt: nowMs()
         }))
         if (typeof document !== 'undefined' && document.hidden) {
@@ -466,6 +468,7 @@ export const usePetStore = defineStore('pet', {
         this.visitorUnlocked = d.visitorUnlocked ?? false
         this.activeVisitor = d.activeVisitor ?? null
         this.visitorSprite = d.visitorSprite || 'happy'
+        this.selectedCharacter = d.selectedCharacter ?? 'toki'
         // 體力：離線時緩慢自然回復（睡眠中）或緩慢流失（清醒中）
         const staOffline = d.sleeping
           ? clamp((d.sta ?? 60) + t * (0.5 / 60))   // 睡覺中：每分鐘 +0.5
@@ -605,6 +608,7 @@ export const usePetStore = defineStore('pet', {
 
     setSprite(name) { this.currentSprite = name },
     setMsg(text)    { this.lastMsg = text },
+    setCharacter(id) { this.selectedCharacter = id },
 
     _syncTokiAffinity() {
       this.aff = clamp(this.aff, 0, 300)

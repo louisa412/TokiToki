@@ -11,6 +11,7 @@
       <div class="hdr-r">
         <div class="clock">{{ clock }}</div>
         <div class="night-txt">{{ store.nightMode ? '🌙 深夜模式' : '' }}</div>
+        <button class="char-select-btn" title="選擇角色" @click="showCharSelect = true">👤</button>
         <BgmPlayer />
         <div class="save-dot" :class="{ flash: savePulse }" title="已存檔"></div>
       </div>
@@ -35,6 +36,9 @@
     <!-- Mini-game modal -->
     <GameModal />
 
+    <!-- 角色選擇 -->
+    <CharacterSelect v-model="showCharSelect" />
+
     <!-- 定期體檢劇場 -->
     <CheckupModal />
 
@@ -51,16 +55,18 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { usePetStore } from './stores/pet'
-import TokiSprite  from './components/TokiSprite.vue'
-import StatsPanel  from './components/StatsPanel.vue'
-import SleepControls from './components/SleepControls.vue'
-import ActionPanel from './components/ActionPanel.vue'
-import GameModal     from './components/GameModal.vue'
-import CheckupModal  from './components/CheckupModal.vue'
-import SplashScreen  from './components/SplashScreen.vue'
-import BgmPlayer     from './components/BgmPlayer.vue'
+import TokiSprite      from './components/TokiSprite.vue'
+import StatsPanel      from './components/StatsPanel.vue'
+import SleepControls   from './components/SleepControls.vue'
+import ActionPanel     from './components/ActionPanel.vue'
+import GameModal       from './components/GameModal.vue'
+import CheckupModal    from './components/CheckupModal.vue'
+import SplashScreen    from './components/SplashScreen.vue'
+import BgmPlayer       from './components/BgmPlayer.vue'
+import CharacterSelect from './components/CharacterSelect.vue'
 
 const store = usePetStore()
+const showCharSelect = ref(false)
 
 // ── Clock ─────────────────────────────────────────────────────────────────
 const clock = ref('──:──:──')
