@@ -257,6 +257,22 @@ const rnd      = arr => arr[Math.floor(Math.random() * arr.length)]
 const nowMs    = () => Date.now()
 const todayStr = () => new Date().toISOString().slice(0, 10)
 
+// ── Per-character state factory ────────────────────────────────────────────
+
+function createDefaultCharacterState() {
+  return {
+    sat: 75, hlt: 70, moo: 65, aff: 50, playerAffinity: 50, sta: 80,
+    adoptedAt:    null,
+    staCritTicks: 0,
+    sleeping: null, sleepEnd: null, sleepStart: null, _sleepNow: 0,
+    sick: false, sickUntil: null, lastSickCheck: '', lowHealthSince: null,
+    careCooldowns: {}, actionCooldowns: {},
+    checkupDone: false, checkupActive: false, checkupTier: null,
+    inventory: [], locationMemory: {},
+    disturbedUntil: 0, rapidClicks: [], patCount: 0, lastPatTime: 0
+  }
+}
+
 // ── Store ──────────────────────────────────────────────────────────────────
 
 export const usePetStore = defineStore('pet', {
@@ -289,6 +305,9 @@ export const usePetStore = defineStore('pet', {
     lastMsg: '橫濱，本大爺回來了。',
     nightMode: false,
     selectedCharacter: 'toki',
+
+    // Per-character independent save states
+    charactersState: { toki: createDefaultCharacterState() },
 
     // Interaction state
     reacting: false,
@@ -388,6 +407,7 @@ export const usePetStore = defineStore('pet', {
       try {
         this._syncTokiAffinity()
         this._updateSpecialSpriteTimers()
+        this._flushToCharactersState(this.selectedCharacter)
         localStorage.setItem('toki_v5', JSON.stringify({
           sat: this.sat, hlt: this.hlt, moo: this.moo, aff: this.aff,
           playerAffinityToki: this.playerAffinityToki,
@@ -416,6 +436,7 @@ export const usePetStore = defineStore('pet', {
           inventory:       this.inventory,
           locationMemory:  this.locationMemory,
           selectedCharacter: this.selectedCharacter,
+          charactersState:   this.charactersState,
           savedAt: nowMs()
         }))
         if (typeof document !== 'undefined' && document.hidden) {
@@ -437,6 +458,7 @@ export const usePetStore = defineStore('pet', {
         if (!raw) {
           // 第一次啟動：記錄收養時間
           this.adoptedAt = nowMs()
+          this._flushToCharactersState(this.selectedCharacter)
           this.save()
           return false
         }
@@ -444,17 +466,11 @@ export const usePetStore = defineStore('pet', {
         const elapsed = (nowMs() - d.savedAt) / 1000
         const t       = Math.min(elapsed, 21600)
 
-        this.sat = clamp(d.sat - t * (1.0 / 64))
-        this.hlt = clamp((migrated ? 70 : (d.hlt ?? 70)) - t * (0.08 / 60))
-        this.lowHealthSinceToki = this.hlt < 30 ? (d.lowHealthSinceToki || d.savedAt || nowMs()) : null
-        this.moo = clamp(d.moo - t * (0.6 / 64))
-        this.aff = clamp(d.aff, 0, 300)
-        this.playerAffinityToki = clamp(d.playerAffinityToki ?? this.aff, 0, 300)
-        this.aff = this.playerAffinityToki
-        this.playerAffinityIchiro = clamp(d.playerAffinityIchiro ?? 0, 0, 300)
+        // ── Ichiro / 訪客系統（永遠從頂層欄位讀取）──────────────────────
+        this.playerAffinityIchiro   = clamp(d.playerAffinityIchiro ?? 0, 0, 300)
         this.relationshipTokiIchiro = clamp(d.relationshipTokiIchiro ?? 0, 0, 300)
         const hadActiveVisitor = d.activeVisitor === 'ichiro'
-        const ichiroBaseSat = d.satIchiro ?? 72
+        const ichiroBaseSat    = d.satIchiro ?? 72
         this.satIchiro = clamp(d.sleepingIchiro
           ? ichiroBaseSat - t * (0.25 / 64)
           : hadActiveVisitor ? ichiroBaseSat - t * (0.85 / 64) : ichiroBaseSat)
@@ -467,36 +483,9 @@ export const usePetStore = defineStore('pet', {
           ? clamp((d.staIchiro ?? 82) + t * (0.5 / 60))
           : hadActiveVisitor ? clamp((d.staIchiro ?? 82) - t * (0.3 / 64)) : clamp(d.staIchiro ?? 82)
         this.checkupDoneIchiro = d.checkupDoneIchiro ?? false
-        this.visitorUnlocked = d.visitorUnlocked ?? false
-        this.activeVisitor = d.activeVisitor ?? null
-        this.visitorSprite = d.visitorSprite || 'happy'
-        this.selectedCharacter = d.selectedCharacter ?? 'toki'
-        // 體力：離線時緩慢自然回復（睡眠中）或緩慢流失（清醒中）
-        const staOffline = d.sleeping
-          ? clamp((d.sta ?? 60) + t * (0.5 / 60))   // 睡覺中：每分鐘 +0.5
-          : clamp((d.sta ?? 60) - t * (0.3 / 64))    // 清醒中：緩慢消耗
-        this.sta = staOffline
-
-        // 收養時間：保留已存的，或從 savedAt 推算
-        this.adoptedAt = d.adoptedAt || d.savedAt || nowMs()
-
-        if (!migrated) {
-          this.sick            = d.sick || false
-          this.sickUntil       = d.sickUntil || null
-          this.lastSickCheck   = d.lastSickCheck || ''
-          this.careCooldowns   = d.careCooldowns || {}
-          this.actionCooldowns = d.actionCooldowns || {}
-          this.checkupDone     = d.checkupDone || false
-          this.inventory       = d.inventory || []
-          this.locationMemory  = d.locationMemory || {}
-        }
-
-        // 離線時感冒自然痊癒但補扣 hlt
-        if (this.sick && this.sickUntil && nowMs() >= this.sickUntil) {
-          this.sick      = false
-          this.sickUntil = null
-          this.hlt       = clamp(this.hlt - 5)
-        }
+        this.visitorUnlocked   = d.visitorUnlocked ?? false
+        this.activeVisitor     = d.activeVisitor ?? null
+        this.visitorSprite     = d.visitorSprite || 'happy'
 
         if (d.sleepingIchiro && d.sleepEndIchiro) {
           this.sleepingIchiro   = d.sleepingIchiro
@@ -509,14 +498,76 @@ export const usePetStore = defineStore('pet', {
           }
         }
 
-        if (d.sleeping && d.sleepEnd) {
-          this.sleeping   = d.sleeping
-          this.sleepEnd   = d.sleepEnd
-          this.sleepStart = d.sleepStart || d.savedAt
-          this._sleepNow  = nowMs()
-          if (nowMs() >= d.sleepEnd) {
-            setTimeout(() => this.wakeUp(false, 'toki'), 500)
+        // ── 主角色狀態 ──────────────────────────────────────────────────
+        if (d.charactersState) {
+          // 新格式：直接還原 charactersState，對目前角色套用離線衰減
+          this.charactersState   = d.charactersState
+          this.selectedCharacter = d.selectedCharacter ?? 'toki'
+          const id = this.selectedCharacter
+          if (!this.charactersState[id]) {
+            const newCs = createDefaultCharacterState()
+            newCs.adoptedAt = nowMs()
+            this.charactersState[id] = newCs
           }
+          const cs = this.charactersState[id]
+          if (cs.sleeping) {
+            cs.sat = clamp(cs.sat - t * (0.3 / 64))
+            cs.sta = clamp(cs.sta + t * (0.5 / 60))
+          } else {
+            cs.sat = clamp(cs.sat - t * (1.0 / 64))
+            cs.hlt = clamp(cs.hlt - t * (0.08 / 60))
+            cs.moo = clamp(cs.moo - t * (0.6 / 64))
+            cs.sta = clamp(cs.sta - t * (0.3 / 64))
+          }
+          cs.lowHealthSince = cs.hlt < 30 ? (cs.lowHealthSince || d.savedAt || nowMs()) : null
+          if (cs.sick && cs.sickUntil && nowMs() >= cs.sickUntil) {
+            cs.sick = false; cs.sickUntil = null; cs.hlt = clamp(cs.hlt - 5)
+          }
+          this._loadFromCharactersState(id)
+
+        } else {
+          // 舊格式：把平坦 Toki 狀態遷移到 charactersState.toki
+          const cs        = createDefaultCharacterState()
+          cs.sat          = clamp(d.sat - t * (1.0 / 64))
+          cs.hlt          = clamp((migrated ? 70 : (d.hlt ?? 70)) - t * (0.08 / 60))
+          cs.moo          = clamp(d.moo - t * (0.6 / 64))
+          cs.aff          = clamp(d.playerAffinityToki ?? d.aff ?? 50, 0, 300)
+          cs.playerAffinity = cs.aff
+          cs.sta          = d.sleeping
+            ? clamp((d.sta ?? 60) + t * (0.5 / 60))
+            : clamp((d.sta ?? 60) - t * (0.3 / 64))
+          cs.adoptedAt    = d.adoptedAt || d.savedAt || nowMs()
+          cs.sleeping     = d.sleeping   || null
+          cs.sleepEnd     = d.sleepEnd   || null
+          cs.sleepStart   = d.sleepStart || null
+          cs.lowHealthSince = cs.hlt < 30 ? (d.lowHealthSinceToki || d.savedAt || nowMs()) : null
+          if (!migrated) {
+            cs.sick            = d.sick            || false
+            cs.sickUntil       = d.sickUntil       || null
+            cs.lastSickCheck   = d.lastSickCheck   || ''
+            cs.careCooldowns   = d.careCooldowns   || {}
+            cs.actionCooldowns = d.actionCooldowns || {}
+            cs.checkupDone     = d.checkupDone     || false
+            cs.inventory       = d.inventory       || []
+            cs.locationMemory  = d.locationMemory  || {}
+          }
+          if (cs.sick && cs.sickUntil && nowMs() >= cs.sickUntil) {
+            cs.sick = false; cs.sickUntil = null; cs.hlt = clamp(cs.hlt - 5)
+          }
+          this.charactersState   = { toki: cs }
+          this.selectedCharacter = d.selectedCharacter ?? 'toki'
+          if (!this.charactersState[this.selectedCharacter]) {
+            const newCs = createDefaultCharacterState()
+            newCs.adoptedAt = nowMs()
+            this.charactersState[this.selectedCharacter] = newCs
+          }
+          this._loadFromCharactersState(this.selectedCharacter)
+        }
+
+        // ── 睡眠結束偵測 ──────────────────────────────────────────────
+        if (this.sleeping && this.sleepEnd) {
+          this._sleepNow = nowMs()
+          if (nowMs() >= this.sleepEnd) setTimeout(() => this.wakeUp(false, 'toki'), 500)
           return true
         }
 
@@ -610,7 +661,90 @@ export const usePetStore = defineStore('pet', {
 
     setSprite(name) { this.currentSprite = name },
     setMsg(text)    { this.lastMsg = text },
-    setCharacter(id) { this.selectedCharacter = id },
+
+    setCharacter(id) {
+      if (id === this.selectedCharacter) return
+      this._flushToCharactersState(this.selectedCharacter)
+      if (!this.charactersState[id]) {
+        const newCs = createDefaultCharacterState()
+        newCs.adoptedAt = nowMs()
+        this.charactersState[id] = newCs
+      }
+      this.selectedCharacter = id
+      this._loadFromCharactersState(id)
+      clearTimeout(this.reactionTimer)
+      this.reacting      = false
+      this.inGame        = false
+      this.activeGameId  = null
+      this.currentSprite = 'energetic'
+      this.idleUpdate()
+      this.save()
+    },
+
+    // Copies current flat fields → charactersState[id]
+    _flushToCharactersState(id) {
+      if (!this.charactersState[id]) this.charactersState[id] = createDefaultCharacterState()
+      const cs          = this.charactersState[id]
+      cs.sat            = this.sat
+      cs.hlt            = this.hlt
+      cs.moo            = this.moo
+      cs.aff            = this.aff
+      cs.playerAffinity = this.playerAffinityToki
+      cs.sta            = this.sta
+      cs.adoptedAt      = this.adoptedAt
+      cs.staCritTicks   = this.staCritTicks
+      cs.sleeping       = this.sleeping
+      cs.sleepEnd       = this.sleepEnd
+      cs.sleepStart     = this.sleepStart
+      cs._sleepNow      = this._sleepNow
+      cs.sick           = this.sick
+      cs.sickUntil      = this.sickUntil
+      cs.lastSickCheck  = this.lastSickCheck
+      cs.lowHealthSince = this.lowHealthSinceToki
+      cs.careCooldowns  = this.careCooldowns
+      cs.actionCooldowns = this.actionCooldowns
+      cs.checkupDone    = this.checkupDone
+      cs.checkupActive  = this.checkupActive
+      cs.checkupTier    = this.checkupTier
+      cs.inventory      = this.inventory
+      cs.locationMemory = this.locationMemory
+      cs.disturbedUntil = this.disturbedUntil
+      cs.rapidClicks    = this.rapidClicks
+      cs.patCount       = this.patCount
+      cs.lastPatTime    = this.lastPatTime
+    },
+
+    // Copies charactersState[id] → current flat fields
+    _loadFromCharactersState(id) {
+      const cs              = this.charactersState[id] || createDefaultCharacterState()
+      this.sat              = cs.sat
+      this.hlt              = cs.hlt
+      this.moo              = cs.moo
+      this.aff              = cs.aff
+      this.playerAffinityToki = cs.playerAffinity ?? cs.aff
+      this.sta              = cs.sta
+      this.adoptedAt        = cs.adoptedAt || nowMs()
+      this.staCritTicks     = cs.staCritTicks || 0
+      this.sleeping         = cs.sleeping   || null
+      this.sleepEnd         = cs.sleepEnd   || null
+      this.sleepStart       = cs.sleepStart || null
+      this._sleepNow        = cs.sleeping   ? nowMs() : 0
+      this.sick             = cs.sick       || false
+      this.sickUntil        = cs.sickUntil  || null
+      this.lastSickCheck    = cs.lastSickCheck  || ''
+      this.lowHealthSinceToki = cs.lowHealthSince || null
+      this.careCooldowns    = cs.careCooldowns  || {}
+      this.actionCooldowns  = cs.actionCooldowns || {}
+      this.checkupDone      = cs.checkupDone    || false
+      this.checkupActive    = cs.checkupActive  || false
+      this.checkupTier      = cs.checkupTier    || null
+      this.inventory        = cs.inventory      || []
+      this.locationMemory   = cs.locationMemory || {}
+      this.disturbedUntil   = cs.disturbedUntil || 0
+      this.rapidClicks      = cs.rapidClicks    || []
+      this.patCount         = cs.patCount       || 0
+      this.lastPatTime      = cs.lastPatTime    || 0
+    },
 
     _syncTokiAffinity() {
       this.aff = clamp(this.aff, 0, 300)
