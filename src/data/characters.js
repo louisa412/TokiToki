@@ -8,13 +8,13 @@ export const CHARACTERS = [
   {
     id: 'kyouji',
     name: 'Kyouji',
-    tagline: '活潑的運動少年',
+    tagline: '輕浮的黑道大叔',
     available: true,
   },
   {
     id: 'satomi',
     name: 'Satomi',
-    tagline: '溫柔的文藝少女',
+    tagline: '羞澀的文藝少年',
     available: true,
   },
 ]
