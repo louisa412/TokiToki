@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { getCharacterName } from '../data/characters'
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -344,6 +345,7 @@ export const usePetStore = defineStore('pet', {
     },
     hasActiveVisitor: (state) => state.activeVisitor === 'ichiro',
     activeVisitorName: (state) => state.activeVisitor === 'ichiro' ? 'Ichiro' : '',
+    tokiName: (state) => getCharacterName(state.selectedCharacter),
     relationshipTitle: (state) => {
       let title = REL_TITLES[0][1]
       for (const [threshold, name] of REL_TITLES) {
@@ -1415,9 +1417,9 @@ export const usePetStore = defineStore('pet', {
 
       // 第 14 天倒數通知
       const left = this.daysLeft
-      if (left === 3) this._sendNotif('day3', 'Toki 還有 3 天 📅', '他快要離開了，好好珍惜這段時間。')
-      if (left === 1) this._sendNotif('day1', 'Toki 還有 1 天 ⏳', '明天他就要走了。')
-      if (left === 0) this._sendNotif('day0', 'Toki 要離開了 💔', '今天是最後一天了。好好陪他。')
+      if (left === 3) this._sendNotif('day3', `${this.tokiName} 還有 3 天 📅`, '他快要離開了，好好珍惜這段時間。')
+      if (left === 1) this._sendNotif('day1', `${this.tokiName} 還有 1 天 ⏳`, '明天他就要走了。')
+      if (left === 0) this._sendNotif('day0', `${this.tokiName} 要離開了 💔`, '今天是最後一天了。好好陪他。')
     },
 
     scheduleBackgroundNotifications() {
@@ -1475,7 +1477,7 @@ export const usePetStore = defineStore('pet', {
       if (!this.sleeping) {
         addStatJobs({
           prefix: 'toki',
-          name: 'Toki',
+          name: this.tokiName,
           sat: this.sat,
           hlt: this.hlt,
           moo: this.moo,
@@ -1483,7 +1485,7 @@ export const usePetStore = defineStore('pet', {
           decay: { sat: DECAY.tokiSat, hlt: DECAY.tokiHlt, moo: DECAY.tokiMoo, sta: DECAY.tokiSta },
           toki: true
         })
-        if (this.isSick) jobs.push({ id: 'toki_sick', title: 'Toki 生病了 🤒', body: '他有點不舒服，去照顧他。', delay: 1 })
+        if (this.isSick) jobs.push({ id: 'toki_sick', title: `${this.tokiName} 生病了 🤒`, body: '他有點不舒服，去照顧他。', delay: 1 })
       }
 
       if (this.hasActiveVisitor && !this.sleepingIchiro) {

@@ -11,7 +11,7 @@
     </div>
 
     <template v-if="!store.hasActiveVisitor">
-      <div v-if="store.isSick" class="sick-badge">🤒 Toki 感冒中</div>
+      <div v-if="store.isSick" class="sick-badge">🤒 {{ store.tokiName }} 感冒中</div>
       <div class="sr" v-for="s in tokiRows" :key="s.id">
         <div class="sl">{{ s.ico }}<br><span class="sl-txt">{{ s.label }}</span></div>
         <div class="bbg" :class="{ 'sick-bar': s.id === 'hlt' && store.isSick }">
@@ -28,7 +28,7 @@
     <template v-else>
       <div class="duo-stat-grid">
         <div class="duo-stat-card">
-          <div class="duo-stat-name">Toki</div>
+          <div class="duo-stat-name">{{ store.tokiName }}</div>
           <div v-if="store.isSick" class="mini-sick">感冒中</div>
           <div class="duo-sr" v-for="s in tokiRows" :key="s.id">
             <span class="duo-sl">
@@ -65,7 +65,7 @@
       </div>
       <div class="relationship-strip">
         <span class="relationship-info">
-          <span class="relationship-pair">💞 Toki × Ichiro</span>
+          <span class="relationship-pair">💞 {{ store.tokiName }} × Ichiro</span>
           <span class="relationship-title">{{ store.relationshipTitle }}</span>
         </span>
         <div class="bbg">

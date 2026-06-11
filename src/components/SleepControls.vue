@@ -1,7 +1,7 @@
 <template>
   <div class="sleep-controls" :class="{ duo: store.hasActiveVisitor }">
     <div class="sleep-group">
-      <div v-if="store.hasActiveVisitor" class="sleep-name">Toki</div>
+      <div v-if="store.hasActiveVisitor" class="sleep-name">{{ store.tokiName }}</div>
       <div class="sleep-bar">
         <button
           class="sleep-btn nap-btn"

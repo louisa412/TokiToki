@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { usePetStore } from '../stores/pet'
 import InteractTab from './InteractTab.vue'
 import FoodTab     from './FoodTab.vue'
@@ -61,11 +61,11 @@ const tabs = [
 const activeTab = ref('interact')
 const activeTarget = ref('toki')
 
-const targets = [
-  { id: 'toki', label: 'Toki' },
+const targets = computed(() => [
+  { id: 'toki', label: store.tokiName },
   { id: 'ichiro', label: 'Ichiro', needsVisitor: true },
   { id: 'duo', label: '雙人', needsVisitor: true }
-]
+])
 
 function selectTarget(target) {
   if (target.needsVisitor && !store.hasActiveVisitor) {

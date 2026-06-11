@@ -46,8 +46,8 @@ const target = computed(() => props.target)
 const isActionDisabled = computed(() => store.reacting || store.targetIsSleeping(props.target))
 const targetNote = computed(() => {
   if (props.target === 'ichiro') return 'Ichiro 的單獨遊戲'
-  if (props.target === 'duo') return 'Toki 和 Ichiro 的雙人遊戲'
-  return 'Toki 的單獨遊戲'
+  if (props.target === 'duo') return `${store.tokiName} 和 Ichiro 的雙人遊戲`
+  return `${store.tokiName} 的單獨遊戲`
 })
 
 function handle(id) {
@@ -74,6 +74,6 @@ function handleDuo(g) {
 
 function emitSleepToast() {
   if (props.target === 'duo') emit('toast', { msg: '有人正在睡，雙人遊戲暫停', type: 'blue' })
-  else emit('toast', { msg: `${props.target === 'ichiro' ? 'Ichiro' : 'Toki'} 正在睡`, type: 'blue' })
+  else emit('toast', { msg: `${props.target === 'ichiro' ? 'Ichiro' : store.tokiName} 正在睡`, type: 'blue' })
 }
 </script>

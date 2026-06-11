@@ -48,7 +48,7 @@ const currentGame = computed(() =>
 
 const gameTitle = computed(() => {
   const g = GAMES.find(g => g.id === store.activeGameId)
-  const target = store.activeGameTarget === 'ichiro' ? 'Ichiro' : 'Toki'
+  const target = store.activeGameTarget === 'ichiro' ? 'Ichiro' : store.tokiName
   return g ? `${g.ico} ${target}：${g.name}` : ''
 })
 

@@ -39,7 +39,7 @@
     </div>
   </div>
   <div v-else>
-    <div class="target-note">Toki 和 Ichiro 的雙人互動</div>
+    <div class="target-note">{{ store.tokiName }} 和 Ichiro 的雙人互動</div>
     <div class="interact-grid duo-grid">
       <button
         v-for="action in DUO_ACTIONS"
@@ -69,7 +69,7 @@ const props = defineProps({
   target: { type: String, default: 'toki' }
 })
 
-const targetLabel = computed(() => props.target === 'ichiro' ? 'Ichiro' : 'Toki')
+const targetLabel = computed(() => props.target === 'ichiro' ? 'Ichiro' : store.tokiName)
 const affinity = computed(() => props.target === 'ichiro' ? store.playerAffinityIchiro : store.playerAffinityToki)
 const isActionDisabled = computed(() => store.reacting || store.targetIsSleeping(props.target))
 

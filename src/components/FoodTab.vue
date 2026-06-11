@@ -74,8 +74,8 @@ const target = computed(() => props.target)
 const isActionDisabled = computed(() => store.reacting || store.targetIsSleeping(props.target))
 const targetNote = computed(() => {
   if (props.target === 'ichiro') return '餵食 Ichiro'
-  if (props.target === 'duo') return 'Toki 和 Ichiro 的雙人食物'
-  return '餵食 Toki'
+  if (props.target === 'duo') return `${store.tokiName} 和 Ichiro 的雙人食物`
+  return `餵食 ${store.tokiName}`
 })
 
 const visibleFoods = computed(() => {
@@ -156,12 +156,12 @@ function handleInventory(index, foodId) {
   } else if (result === 'need_visitor') {
     emit('toast', { msg: '這個要 Ichiro 來訪時才能用', type: 'blue' })
   } else if (result === 'sleeping') {
-    emit('toast', { msg: 'Toki 正在睡', type: 'blue' })
+    emit('toast', { msg: `${store.tokiName} 正在睡`, type: 'blue' })
   }
 }
 
 function emitSleepToast() {
   if (props.target === 'duo') emit('toast', { msg: '有人正在睡，雙人食物暫停', type: 'blue' })
-  else emit('toast', { msg: `${props.target === 'ichiro' ? 'Ichiro' : 'Toki'} 正在睡`, type: 'blue' })
+  else emit('toast', { msg: `${props.target === 'ichiro' ? 'Ichiro' : store.tokiName} 正在睡`, type: 'blue' })
 }
 </script>
