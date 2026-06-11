@@ -147,7 +147,7 @@ function doPetition() {
     petitionEnded.value  = true
   } else {
     if (result.affectionPenalty) {
-      store.aff = Math.max(0, store.aff + result.affectionPenalty)
+      store._addTokiAffinity(result.affectionPenalty)
       store.save()
     }
     petitionEnded.value = true
