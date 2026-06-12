@@ -39,7 +39,7 @@
     </div>
   </div>
   <div v-else>
-    <div class="target-note">{{ store.tokiName }} 和 Ichiro 的雙人互動</div>
+    <div class="target-note">{{ store.tokiName }} 和 {{ store.activeVisitorName }} 的雙人互動</div>
     <div class="interact-grid duo-grid">
       <button
         v-for="action in DUO_ACTIONS"
@@ -69,7 +69,7 @@ const props = defineProps({
   target: { type: String, default: 'toki' }
 })
 
-const targetLabel = computed(() => props.target === 'ichiro' ? 'Ichiro' : store.tokiName)
+const targetLabel = computed(() => props.target === 'ichiro' ? store.activeVisitorName : store.tokiName)
 const affinity = computed(() => props.target === 'ichiro' ? store.playerAffinityIchiro : store.playerAffinityToki)
 const isActionDisabled = computed(() => store.reacting || store.targetIsSleeping(props.target))
 
@@ -88,7 +88,7 @@ function handle(id) {
     const rem = Math.ceil((store.disturbedUntil - Date.now()) / 1000)
     emit('toast', { msg: `他現在不理你...剩${rem}秒`, type: 'red' })
   } else if (result === 'need_visitor') {
-    emit('toast', { msg: '先讓 Ichiro 來訪', type: 'blue' })
+    emit('toast', { msg: '先讓訪客來訪', type: 'blue' })
   } else if (result === 'cooldown') {
     emit('toast', { msg: '剛剛才發呆過，再等一下', type: 'blue' })
   } else if (result === 'sleeping') emitSleepToast()
@@ -107,7 +107,7 @@ function handleUnlock(u) {
   const result = store.doAction(u.id, props.target)
   if      (result === 'cooldown')  emit('toast', { msg: '太快了，他需要時間',     type: 'red' })
   else if (result === 'not_night') emit('toast', { msg: '這個只能在深夜做',       type: 'red' })
-  else if (result === 'need_visitor') emit('toast', { msg: '先讓 Ichiro 來訪', type: 'blue' })
+  else if (result === 'need_visitor') emit('toast', { msg: '先讓訪客來訪', type: 'blue' })
   else if (result === 'sleeping') emitSleepToast()
   else if (result === 'disturbed') {
     const rem = Math.ceil((store.disturbedUntil - Date.now()) / 1000)
@@ -117,7 +117,7 @@ function handleUnlock(u) {
 
 function handleDuo(action) {
   const result = store.doDuoAction(action.id)
-  if (result === 'need_visitor') emit('toast', { msg: '先讓 Ichiro 來訪', type: 'blue' })
+  if (result === 'need_visitor') emit('toast', { msg: '先讓訪客來訪', type: 'blue' })
   if (result === 'locked') emit('toast', { msg: `關係需要 ${action.minRel}+`, type: 'red' })
   if (result === 'sleeping') emitSleepToast()
 }

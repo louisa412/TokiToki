@@ -437,11 +437,7 @@ export const usePetStore = defineStore('pet', {
           charactersState:   this.charactersState,
           savedAt: nowMs()
         }))
-        if (typeof document !== 'undefined' && document.hidden) {
-          this.scheduleBackgroundNotifications()
-        } else {
-          _tokiBridge({ action: 'cancelAll' })
-        }
+        this.scheduleBackgroundNotifications()
       } catch (_) {}
     },
 
@@ -728,7 +724,7 @@ export const usePetStore = defineStore('pet', {
     setMsg(text)    {
       this.lastMsg = text
         .replace(/\{name\}/g, this.tokiName)
-        .replace(/\{visitor\}/g, this.activeVisitorName || 'Ichiro')
+        .replace(/\{visitor\}/g, this.activeVisitorName)
     },
 
     setCharacter(id) {
@@ -1172,7 +1168,7 @@ export const usePetStore = defineStore('pet', {
       this.moo = clamp(this.moo + (action.moo || 0))
       this.sta = clamp(this.sta + (action.sta || 0))
       this._addTokiAffinity(action.tokiAff || 0)
-      this._addIchiroAffinity(action.ichiroAff || 0)
+      this._addVisitorAffinity(action.ichiroAff || 0)
       this._addRelationship(action.rel || 0)
 
       const effect = id === 'mini_game' ? 'bounce' : id === 'chat' ? 'near' : 'hearts'
@@ -1193,11 +1189,21 @@ export const usePetStore = defineStore('pet', {
       this.hlt = clamp(this.hlt + (action.hlt || 0))
       this.sta = clamp(this.sta + (action.sta || 0))
       this.moo = clamp(this.moo + (action.moo || 0))
-      this.hltIchiro = clamp(this.hltIchiro + (action.hlt || 0))
-      this.staIchiro = clamp(this.staIchiro + (action.sta || 0))
-      this.mooIchiro = clamp(this.mooIchiro + (action.moo || 0))
+      const vidCare = this.activeVisitor
+      if (vidCare === 'ichiro') {
+        this.hltIchiro = clamp(this.hltIchiro + (action.hlt || 0))
+        this.staIchiro = clamp(this.staIchiro + (action.sta || 0))
+        this.mooIchiro = clamp(this.mooIchiro + (action.moo || 0))
+      } else {
+        const csCare = this.charactersState[vidCare]
+        if (csCare) {
+          csCare.hlt = clamp(csCare.hlt + (action.hlt || 0))
+          csCare.sta = clamp(csCare.sta + (action.sta || 0))
+          csCare.moo = clamp(csCare.moo + (action.moo || 0))
+        }
+      }
       this._addTokiAffinity(action.tokiAff || 0)
-      this._addIchiroAffinity(action.ichiroAff || 0)
+      this._addVisitorAffinity(action.ichiroAff || 0)
       this._addRelationship(action.rel || 0)
       this.reactPair('happy', 'happy', 'near', action.msgs, 2600)
       this.save()
@@ -1222,12 +1228,23 @@ export const usePetStore = defineStore('pet', {
         this.hlt = clamp(this.hlt + (f.hlt || 0))
         this.sta = clamp(this.sta + (f.sta || 0))
         this.moo = clamp(this.moo + (f.moo || 0))
-        this.satIchiro = clamp(this.satIchiro + (f.sat || 0))
-        this.hltIchiro = clamp(this.hltIchiro + (f.hlt || 0))
-        this.staIchiro = clamp(this.staIchiro + (f.sta || 0))
-        this.mooIchiro = clamp(this.mooIchiro + (f.moo || 0))
+        const vid = this.activeVisitor
+        if (vid === 'ichiro') {
+          this.satIchiro = clamp(this.satIchiro + (f.sat || 0))
+          this.hltIchiro = clamp(this.hltIchiro + (f.hlt || 0))
+          this.staIchiro = clamp(this.staIchiro + (f.sta || 0))
+          this.mooIchiro = clamp(this.mooIchiro + (f.moo || 0))
+        } else {
+          const cs = this.charactersState[vid]
+          if (cs) {
+            cs.sat = clamp(cs.sat + (f.sat || 0))
+            cs.hlt = clamp(cs.hlt + (f.hlt || 0))
+            cs.sta = clamp(cs.sta + (f.sta || 0))
+            cs.moo = clamp(cs.moo + (f.moo || 0))
+          }
+        }
         this._addTokiAffinity(f.tokiAff || 0)
-        this._addIchiroAffinity(f.ichiroAff || 0)
+        this._addVisitorAffinity(f.ichiroAff || 0)
         this._addRelationship(f.rel || 0)
         this.reactPair(f.sp || 'happy', 'heart', 'hearts', f.msgs, 2600)
         this.save()
@@ -1886,7 +1903,9 @@ export const usePetStore = defineStore('pet', {
       }
 
       _tokiBridge({ action: 'cancelAll' })
+      const isForeground = typeof document !== 'undefined' && !document.hidden
       for (const j of jobs) {
+        if (isForeground && j.delay <= 1) continue
         _tokiBridge({ action: 'schedule', id: j.id, title: j.title, body: j.body, delay: j.delay })
       }
     },

@@ -3,7 +3,7 @@ export function isIchiroGame(store) {
 }
 
 export function gameTargetName(store) {
-  return isIchiroGame(store) ? 'Ichiro' : store.tokiName
+  return isIchiroGame(store) ? store.activeVisitorName : store.tokiName
 }
 
 export function gameLine(store, tokiLine, ichiroLine) {
