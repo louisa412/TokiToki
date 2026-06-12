@@ -2,7 +2,7 @@ export const CHARACTERS = [
   {
     id: 'toki',
     name: 'Toki',
-    tagline: '傲嬌電子寵物',
+    tagline: '傲嬌黑道少主',
     available: true,
   },
   {
