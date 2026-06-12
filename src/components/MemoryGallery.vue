@@ -71,6 +71,7 @@ const memories = computed(() => {
   background: var(--sur);
   border: 1px solid var(--bd);
   width: min(92vw, 380px);
+  min-height: 300px;
   max-height: 85dvh;
   overflow-y: auto;
   padding: 18px;
