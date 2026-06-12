@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { getCharacterName, CHARACTERS } from '../data/characters'
 import { CHARACTER_DIALOGUE, DEFAULT_VISITOR_DIALOGUE } from '../data/dialogue'
+import { unlockMemory, ensureMemoryFields } from '../systems/memorySystem'
+import { HIGH_AFFINITY_THRESHOLD } from '../data/memories'
 
 function pairKey(a, b) { return [a, b].sort().join('-') }
 
@@ -212,7 +214,8 @@ function createDefaultCharacterState() {
     careCooldowns: {}, actionCooldowns: {},
     checkupDone: false, checkupActive: false, checkupTier: null,
     inventory: [], locationMemory: {},
-    disturbedUntil: 0, rapidClicks: [], patCount: 0, lastPatTime: 0
+    disturbedUntil: 0, rapidClicks: [], patCount: 0, lastPatTime: 0,
+    memories: [], milestones: {}
   }
 }
 
@@ -535,6 +538,10 @@ export const usePetStore = defineStore('pet', {
         if (d.charactersState) {
           // 新格式：直接還原 charactersState，對目前角色套用離線衰減
           this.charactersState   = d.charactersState
+          // 舊存檔遷移：補上 memories / milestones 預設值
+          for (const cid of Object.keys(this.charactersState)) {
+            ensureMemoryFields(this.charactersState[cid])
+          }
           this.selectedCharacter = d.selectedCharacter ?? 'toki'
           const id = this.selectedCharacter
           if (!this.charactersState[id]) {
@@ -680,6 +687,9 @@ export const usePetStore = defineStore('pet', {
       // 好感高時有極微弱的自然衰退（需要持續維護）
       if (this.aff > 240) this.aff = clamp(this.aff - 0.025, 0, 300)
       this._syncTokiAffinity()
+
+      // 好感第一次達標 → 解鎖 highAffinity 記憶（已解鎖時為 no-op）
+      if (this.aff >= HIGH_AFFINITY_THRESHOLD) unlockMemory(this, 'highAffinity')
 
       // hlt 不自然衰減，只靠食物 / 照護 / 生病 / 過勞改變
       this._updateSpecialSpriteTimers()
@@ -1012,6 +1022,7 @@ export const usePetStore = defineStore('pet', {
             this.moo = clamp(this.moo + 10)
             this.aff = clamp(this.aff + 8, 0, 300)
             this.react('patted', a('pat'))
+            unlockMemory(this, 'firstPat')
           }
           break
         }
@@ -1066,6 +1077,7 @@ export const usePetStore = defineStore('pet', {
           if (!this.nightMode) return 'not_night'
           this.aff = clamp(this.aff + 20, 0, 300)
           this.react('praised', a('latenight'))
+          unlockMemory(this, 'firstLateNight')
           break
       }
       this.save()
@@ -1311,6 +1323,7 @@ export const usePetStore = defineStore('pet', {
           this.sick         = false
           this.sickUntil    = null
           this.lastSickCheck = ''   // 允許隔天再觸發
+          unlockMemory(this, 'firstSickRecovery')
         }
       }
 
@@ -1502,6 +1515,7 @@ export const usePetStore = defineStore('pet', {
         this.hlt          = clamp(this.hlt - 5)
         const sk = this._dlg().sickness || CHARACTER_DIALOGUE.toki.sickness
         this.react('sad', sk.recovery || CHARACTER_DIALOGUE.toki.sickness.recovery, 2200)
+        unlockMemory(this, 'firstSickRecovery')
         return
       }
 
@@ -1596,6 +1610,7 @@ export const usePetStore = defineStore('pet', {
         const hrs = sleptMs / 3600000
         if (frac >= 0.9) {
           this.react('energetic', s('fullSleep'), 2200)
+          unlockMemory(this, 'firstFullSleep')
           this._sendNotif('sleepend', `${this.tokiName} 睡醒了 ☀️`, '他已經起來了，去打個招呼吧。', 1)
         } else {
           const h  = Math.floor(hrs)
