@@ -22,6 +22,7 @@
         <div v-if="store.hasActiveVisitor" class="character-slot ichiro-slot">
           <img
             class="sprite visitor-sprite vis"
+            :class="{ bk: visitorBouncing }"
             :src="visitorSpriteSrc"
             :alt="store.activeVisitorName"
             @error="onVisitorError"
@@ -47,8 +48,9 @@ import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { usePetStore } from '../stores/pet'
 import { CHARACTERS } from '../data/characters'
 
-const store    = usePetStore()
-const bouncing = ref(false)
+const store          = usePetStore()
+const bouncing       = ref(false)
+const visitorBouncing = ref(false)
 const displayRef = ref(null)
 const wrapRef    = ref(null)
 const imgRef     = ref(null)
@@ -102,6 +104,15 @@ watch(() => store.currentSprite, (next, prev) => {
   setTimeout(() => {
     bouncing.value = true
     setTimeout(() => { bouncing.value = false }, 280)
+  }, 10)
+})
+
+watch(() => store.visitorSprite, (next, prev) => {
+  if (next === prev) return
+  visitorBouncing.value = false
+  setTimeout(() => {
+    visitorBouncing.value = true
+    setTimeout(() => { visitorBouncing.value = false }, 280)
   }, 10)
 })
 
