@@ -501,18 +501,6 @@ export const usePetStore = defineStore('pet', {
           }
         }
 
-        // 非 Ichiro 訪客：若正在睡覺且時間已到則喚醒
-        if (this.activeVisitor && this.activeVisitor !== 'ichiro') {
-          const vcs = this.charactersState[this.activeVisitor]
-          if (vcs?.sleeping && vcs?.sleepEnd) {
-            this._sleepNowVisitor = nowMs()
-            this.visitorSprite = 'sleeping'
-            if (nowMs() >= vcs.sleepEnd) {
-              setTimeout(() => this.wakeUp(false, this.activeVisitor), 500)
-            }
-          }
-        }
-
         // ── 主角色狀態 ──────────────────────────────────────────────────
         if (d.charactersState) {
           // 新格式：直接還原 charactersState，對目前角色套用離線衰減
@@ -539,6 +527,32 @@ export const usePetStore = defineStore('pet', {
             cs.sick = false; cs.sickUntil = null; cs.hlt = clamp(cs.hlt - 5)
           }
           this._loadFromCharactersState(id)
+
+          // 非 Ichiro 訪客：套用離線衰減 + 睡眠偵測（需在 charactersState 還原後才讀）
+          if (this.activeVisitor && this.activeVisitor !== 'ichiro') {
+            const vid = this.activeVisitor
+            if (!this.charactersState[vid]) {
+              this.charactersState[vid] = createDefaultCharacterState()
+            }
+            const vcs = this.charactersState[vid]
+            if (vcs.sleeping) {
+              vcs.sat = clamp(vcs.sat - t * (0.25 / 64))
+              vcs.sta = clamp(vcs.sta + t * (0.5 / 60))
+            } else {
+              vcs.sat = clamp(vcs.sat - t * (0.85 / 64))
+              vcs.hlt = clamp(vcs.hlt - t * (0.06 / 60))
+              vcs.moo = clamp(vcs.moo - t * (0.5 / 64))
+              vcs.sta = clamp(vcs.sta - t * (0.3 / 64))
+            }
+            vcs.lowHealthSince = vcs.hlt < 30 ? (vcs.lowHealthSince || d.savedAt || nowMs()) : null
+            if (vcs.sleeping && vcs.sleepEnd) {
+              this._sleepNowVisitor = nowMs()
+              this.visitorSprite = 'sleeping'
+              if (nowMs() >= vcs.sleepEnd) {
+                setTimeout(() => this.wakeUp(false, vid), 500)
+              }
+            }
+          }
 
         } else {
           // 舊格式：把平坦 Toki 狀態遷移到 charactersState.toki
@@ -1107,6 +1121,9 @@ export const usePetStore = defineStore('pet', {
       this.activeVisitor = id
       this.visitorSprite = 'happy'
       this._sleepNowVisitor = 0
+      if (id !== 'ichiro' && !this.charactersState[id]) {
+        this.charactersState[id] = createDefaultCharacterState()
+      }
       this.reactPair('energetic', 'happy', 'near', this._vt('arrival'), 2400)
       this.save()
       return true
