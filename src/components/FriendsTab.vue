@@ -78,20 +78,9 @@ const store = usePetStore()
 const emit = defineEmits(['toast'])
 const base = import.meta.env.BASE_URL
 
-const availableVisitors = computed(() => {
-  const visitors = []
-  // Ichiro は常に追加可能（NPC）
-  if (store.selectedCharacter !== 'ichiro') {
-    visitors.push({ id: 'ichiro', name: 'Ichiro' })
-  }
-  // 他のプレイアブルキャラクター
-  for (const c of CHARACTERS) {
-    if (c.id !== store.selectedCharacter) {
-      visitors.push({ id: c.id, name: c.name })
-    }
-  }
-  return visitors
-})
+const availableVisitors = computed(() =>
+  CHARACTERS.filter(c => c.id !== store.selectedCharacter)
+)
 
 const relationshipPct = computed(() => Math.min(Math.round(store.currentRelationship / 3), 100))
 

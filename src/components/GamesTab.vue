@@ -45,8 +45,8 @@ const props = defineProps({
 const target = computed(() => props.target)
 const isActionDisabled = computed(() => store.reacting || store.targetIsSleeping(props.target))
 const targetNote = computed(() => {
-  if (props.target === 'ichiro') return 'Ichiro 的單獨遊戲'
-  if (props.target === 'duo') return `${store.tokiName} 和 Ichiro 的雙人遊戲`
+  if (props.target === 'ichiro') return `${store.activeVisitorName} 的單獨遊戲`
+  if (props.target === 'duo') return `${store.tokiName} 和 ${store.activeVisitorName} 的雙人遊戲`
   return `${store.tokiName} 的單獨遊戲`
 })
 
@@ -57,7 +57,7 @@ function handle(id) {
     const rem = Math.ceil((store.disturbedUntil - Date.now()) / 1000)
     emit('toast', { msg: `他還在生氣...剩${rem}秒`, type: 'red' })
   } else if (result === 'need_visitor') {
-    emit('toast', { msg: '先讓 Ichiro 來訪', type: 'blue' })
+    emit('toast', { msg: '先叫朋友來訪', type: 'blue' })
   } else if (result === 'sleeping') {
     emitSleepToast()
   } else if (result === true) {
@@ -67,13 +67,13 @@ function handle(id) {
 
 function handleDuo(g) {
   const result = store.openGame(g.id, 'duo')
-  if (result === 'need_visitor') emit('toast', { msg: '先讓 Ichiro 來訪', type: 'blue' })
+  if (result === 'need_visitor') emit('toast', { msg: '先叫朋友來訪', type: 'blue' })
   else if (result === 'locked') emit('toast', { msg: `關係需要 ${g.minRel}+`, type: 'red' })
   else if (result === 'sleeping') emitSleepToast()
 }
 
 function emitSleepToast() {
   if (props.target === 'duo') emit('toast', { msg: '有人正在睡，雙人遊戲暫停', type: 'blue' })
-  else emit('toast', { msg: `${props.target === 'ichiro' ? 'Ichiro' : store.tokiName} 正在睡`, type: 'blue' })
+  else emit('toast', { msg: `${props.target === 'ichiro' ? store.activeVisitorName : store.tokiName} 正在睡`, type: 'blue' })
 }
 </script>
