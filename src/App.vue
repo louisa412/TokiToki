@@ -11,6 +11,7 @@
       <div class="hdr-r">
         <div class="clock">{{ clock }}</div>
         <div class="night-txt">{{ store.nightMode ? '🌙 深夜模式' : '' }}</div>
+        <button class="char-select-btn" title="相遇記憶" @click="showMemories = true">📖</button>
         <button class="char-select-btn" title="選擇角色" @click="showCharSelect = true">👤</button>
         <BgmPlayer />
         <div class="save-dot" :class="{ flash: savePulse }" title="已存檔"></div>
@@ -39,6 +40,9 @@
     <!-- 角色選擇 -->
     <CharacterSelect v-model="showCharSelect" />
 
+    <!-- 相遇記憶 -->
+    <MemoryGallery v-model="showMemories" />
+
     <!-- 定期體檢劇場 -->
     <CheckupModal />
 
@@ -64,9 +68,11 @@ import CheckupModal    from './components/CheckupModal.vue'
 import SplashScreen    from './components/SplashScreen.vue'
 import BgmPlayer       from './components/BgmPlayer.vue'
 import CharacterSelect from './components/CharacterSelect.vue'
+import MemoryGallery   from './components/MemoryGallery.vue'
 
 const store = usePetStore()
 const showCharSelect = ref(false)
+const showMemories   = ref(false)
 
 // ── Clock ─────────────────────────────────────────────────────────────────
 const clock = ref('──:──:──')
