@@ -60,7 +60,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import { usePetStore, FOODS, ICHIRO_FOOD_PREFS } from '../stores/pet'
+import { usePetStore, FOODS } from '../stores/pet'
+import { CHARACTER_MAP } from '../data/characters'
 
 const store = usePetStore()
 const emit  = defineEmits(['toast'])
@@ -103,25 +104,37 @@ function getFoodPreview(f) {
     rel: f.rel || 0
   }
 
-  if (props.target === 'ichiro') {
-    const pref = ICHIRO_FOOD_PREFS[f.id]
-    if (pref) {
-      preview.moo = pref.moo || 0
-      preview.aff = pref.aff || 0
+  if (props.target === 'ichiro' && store.activeVisitor) {
+    const vid   = store.activeVisitor
+    const vPref = CHARACTER_MAP[vid]?.visitorFoods?.[f.id]
+    if (vPref) {
+      preview.moo = vPref.moo || 0
+      preview.aff = vPref.aff || 0
       return preview
     }
     if (f.healthFood) {
-      const tier = store.playerAffinityIchiro >= 200 ? 2 : store.playerAffinityIchiro >= 100 ? 1 : 0
-      preview.moo = f.mooTiers?.[tier] || 0
-      preview.aff = f.affTiers?.[tier] || 0
+      const charFoods = CHARACTER_MAP[vid]?.foods?.[f.id]
+      const mooTiers  = charFoods?.mooTiers ?? f.mooTiers
+      const affTiers  = charFoods?.affTiers ?? f.affTiers
+      const tier = store.visitorAff >= 200 ? 2 : store.visitorAff >= 100 ? 1 : 0
+      preview.moo = mooTiers?.[tier] || 0
+      preview.aff = affTiers?.[tier] || 0
       return preview
     }
   }
 
-  if (props.target === 'toki' && f.healthFood) {
-    const tier = store.playerAffinityToki >= 200 ? 2 : store.playerAffinityToki >= 100 ? 1 : 0
-    preview.moo = f.mooTiers?.[tier] || 0
-    preview.aff = f.affTiers?.[tier] || 0
+  if (props.target === 'toki') {
+    const cp = CHARACTER_MAP[store.selectedCharacter]?.foods?.[f.id]
+    if (f.healthFood) {
+      const mooTiers = cp?.mooTiers ?? f.mooTiers
+      const affTiers = cp?.affTiers ?? f.affTiers
+      const tier = store.playerAffinityToki >= 200 ? 2 : store.playerAffinityToki >= 100 ? 1 : 0
+      preview.moo = mooTiers?.[tier] || 0
+      preview.aff = affTiers?.[tier] || 0
+    } else if (cp) {
+      preview.moo = cp.moo ?? f.moo ?? 0
+      preview.aff = cp.aff ?? f.aff ?? 0
+    }
   }
 
   return preview

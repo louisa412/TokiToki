@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getCharacterName, CHARACTERS } from '../data/characters'
+import { getCharacterName, CHARACTERS, CHARACTER_MAP } from '../data/characters'
 import { CHARACTER_DIALOGUE, DEFAULT_VISITOR_DIALOGUE } from '../data/dialogue'
 import { unlockMemory, ensureMemoryFields } from '../systems/memorySystem'
 import { HIGH_AFFINITY_THRESHOLD } from '../data/memories'
@@ -10,46 +10,46 @@ function pairKey(a, b) { return [a, b].sort().join('-') }
 
 export const FOODS = [
   // ── 原有食物 ──────────────────────────────────────────────────────────
-  { id: 'coffee',   ico: '☕', name: '黑咖啡',       sat: 5,  hlt: 0,   moo: 10,  aff: 5,  sp: 'praised',   msgs: ['嗯。這個可以。', '...勉強合格。', '黑的才對。'] },
-  { id: 'ramen',    ico: '🍜', name: '家系拉麵',      sat: 40, hlt: -8,  moo: 15,  aff: 10, sp: 'happy',     msgs: ['...不錯。', '哼，還可以啦。', '就是要吃這個。'] },
-  { id: 'bento',    ico: '🍱', name: '燒肉便當',      sat: 35, hlt: 5,   moo: 10,  aff: 8,  sp: 'energetic', msgs: ['蛋白質？好吧，補充完畢。', '...吃完了，好飽。', '好。'] },
-  { id: 'mapo',     ico: '🌶', name: '激辛麻婆豆腐',  sat: 20, hlt: -5,  moo: 20,  aff: 15, sp: 'happy',     msgs: ['...辣得剛好。', '汗出來了...', '這份做得不錯。'] },
-  { id: 'porridge', ico: '🍓', name: '草莓粥 ★',      sat: 50, hlt: 10,  moo: -20, aff: 30, sp: 'sad',       msgs: ['......你做的？', '...甜的，噁。', '...為什麼是草莓。算了。'] },
-  { id: 'cig',      ico: '🚬', name: '巧克力香菸',    sat: 0,  hlt: -10, moo: 25,  aff: 5,  sp: 'praised',   msgs: ['...這種例外。', '不是我喜歡甜的。', '...好抽。'] },
-  { id: 'shumai',   ico: '🥟', name: '橫濱燒賣',      sat: 15, hlt: 3,   moo: 10,  aff: 5,  sp: 'energetic', msgs: ['這就是橫濱的味道。', '...合格。', '還不錯。'] },
-  { id: 'energy',   ico: '⚡', name: '能量飲',         sat: 5,  hlt: -5,  moo: 5,   aff: 0,  sp: 'energetic', msgs: ['準備好了。', '...體力回來了。', '來吧。'] },
-  { id: 'dark_choco', ico: '🍫', name: '黑巧克力',      sat: 8,  hlt: -5,  sta: 20, moo: 5,   aff: 3,  sp: 'praised',   msgs: ['...還不錯。', '苦度可以。', '不是因為甜才吃。'] },
-  { id: 'sports_drink', ico: '🥤', name: '運動飲料',    sat: 5,  hlt: -5,  sta: 20, moo: -5,  aff: 0,  sp: 'helpless',  msgs: ['這種東西喝多了不好。', '...補水而已。', '下次別買太甜的。'] },
+  { id: 'coffee',   ico: '☕', name: '黑咖啡',       sat: 5,  hlt: 0,   moo: 8,   aff: 4,  sp: 'praised',   msgs: ['不錯。', '謝謝。', '喝完了。'] },
+  { id: 'ramen',    ico: '🍜', name: '家系拉麵',      sat: 40, hlt: -8,  moo: 12,  aff: 8,  sp: 'happy',     msgs: ['好吃。', '謝謝。', '吃完了。'] },
+  { id: 'bento',    ico: '🍱', name: '燒肉便當',      sat: 35, hlt: 5,   moo: 10,  aff: 8,  sp: 'energetic', msgs: ['謝謝你準備的。', '好吃。', '吃完了。'] },
+  { id: 'mapo',     ico: '🌶', name: '激辛麻婆豆腐',  sat: 20, hlt: -5,  moo: 10,  aff: 5,  sp: 'happy',     msgs: ['辣！', '謝謝。', '過癮。'] },
+  { id: 'porridge', ico: '🍓', name: '草莓粥 ★',      sat: 50, hlt: 10,  moo: 5,   aff: 5,  sp: 'happy',     msgs: ['甜的。', '謝謝。', '吃完了。'] },
+  { id: 'cig',      ico: '🚬', name: '巧克力香菸',    sat: 0,  hlt: -10, moo: 5,   aff: 2,  sp: 'energetic', msgs: ['謝謝。', '（吸了一口）', '好。'] },
+  { id: 'shumai',   ico: '🥟', name: '橫濱燒賣',      sat: 15, hlt: 3,   moo: 10,  aff: 5,  sp: 'energetic', msgs: ['好吃。', '謝謝。', '吃完了。'] },
+  { id: 'energy',   ico: '⚡', name: '能量飲',         sat: 5,  hlt: -5,  moo: 5,   aff: 0,  sp: 'energetic', msgs: ['精神來了。', '謝謝。', '體力恢復。'] },
+  { id: 'dark_choco', ico: '🍫', name: '黑巧克力',      sat: 8,  hlt: -5,  sta: 20, moo: 5,   aff: 3,  sp: 'praised',   msgs: ['謝謝。', '苦的。', '不錯。'] },
+  { id: 'sports_drink', ico: '🥤', name: '運動飲料',    sat: 5,  hlt: -5,  sta: 20, moo: -5,  aff: 0,  sp: 'helpless',  msgs: ['謝謝。', '補水了。', '喝完了。'] },
   // ── 上次新增食物 ───────────────────────────────────────────────────────
-  { id: 'noodle',   ico: '🍝', name: '泡麵 🌙',        sat: 45, hlt: -12, moo: 15,  aff: 8,  sp: 'happy',     msgs: ['...深夜吃這個最好。', '泡麵就是要加蛋啊', '...燙的才行。'], nightOnly: true },
-  { id: 'beer',     ico: '🍺', name: '罐裝啤酒',       sat: 5,  hlt: -8,  moo: 20,  aff: 5,  sp: 'happy',     msgs: ['...舒服。', '苦的才對。', '今天喝一罐就好。'] },
-  { id: 'onigiri',  ico: '🍙', name: '鹽味飯糰',       sat: 25, hlt: 5,   moo: 5,   aff: 3,  sp: 'energetic', msgs: ['簡單的就行。', '...調味很剛好。', '不用太多。'] },
-  { id: 'donut',    ico: '🍩', name: '甜甜圈',          sat: 20, hlt: -6,  moo: 30,  aff: 8,  sp: 'happy',     msgs: ['...我沒說喜歡吃甜的。', '別說出去。', '是你叫我吃的。'] },
-  { id: 'chips',    ico: '🍟', name: '辣味洋芋片',        sat: 10, hlt: -8,  moo: 15,  aff: 5,  sp: 'energetic', msgs: ['辣的才好吃。', '滿脆的。', '可以。'] },
-  { id: 'matcha',   ico: '🍦', name: '抹茶冰淇淋',     sat: 15, hlt: 2,   moo: 20,  aff: 10, sp: 'praised',   msgs: ['...抹茶還可以。', '甜度挺剛好。', '...你記得我喜歡這個？'] },
+  { id: 'noodle',   ico: '🍝', name: '泡麵 🌙',        sat: 45, hlt: -12, moo: 12,  aff: 6,  sp: 'happy',     msgs: ['好吃。', '謝謝。', '吃完了。'], nightOnly: true },
+  { id: 'beer',     ico: '🍺', name: '罐裝啤酒',       sat: 5,  hlt: -8,  moo: 8,   aff: 3,  sp: 'happy',     msgs: ['謝謝。', '喝完了。', '不錯。'] },
+  { id: 'onigiri',  ico: '🍙', name: '鹽味飯糰',       sat: 25, hlt: 5,   moo: 8,   aff: 4,  sp: 'energetic', msgs: ['謝謝。', '好吃。', '吃完了。'] },
+  { id: 'donut',    ico: '🍩', name: '甜甜圈',          sat: 20, hlt: -6,  moo: 10,  aff: 5,  sp: 'happy',     msgs: ['甜甜的。', '謝謝。', '好吃。'] },
+  { id: 'chips',    ico: '🍟', name: '辣味洋芋片',        sat: 10, hlt: -8,  moo: 10,  aff: 4,  sp: 'energetic', msgs: ['脆的。', '謝謝。', '好吃。'] },
+  { id: 'matcha',   ico: '🍦', name: '抹茶冰淇淋',     sat: 15, hlt: 2,   moo: 12,  aff: 6,  sp: 'praised',   msgs: ['謝謝。', '抹茶。', '好。'] },
   // ── 健康向食物（好感分三段懲罰）──────────────────────────────────────
-  { id: 'salad',    ico: '🥗', name: '蔬菜沙拉',   sat: 10, hlt: 25, sp: 'sad', healthFood: true,
-    mooTiers: [-15, -8, -4], affTiers: [-5, -2, 0],
+  { id: 'salad',    ico: '🥗', name: '蔬菜沙拉',   sat: 10, hlt: 25, sp: 'helpless', healthFood: true,
+    mooTiers: [-5, 0, 3], affTiers: [-2, 0, 2],
     msgTiers: [
-      ['你想幹嘛。這什麼東西。', '我又不是兔子。', '...不吃。'],
-      ['...你是認真的。', '吃就吃。少廢話。', '...隨便。'],
-      ['...算了。你說好就好。', '...不難吃。（小聲）', '...謝了。']
+      ['謝謝。', '吃完了。', '蔬菜。'],
+      ['謝謝。', '吃完了。', '健康的。'],
+      ['謝謝你。', '很好。', '謝了。']
     ]
   },
-  { id: 'greentea', ico: '🍵', name: '無糖綠茶',   sat: 0,  hlt: 20, sp: 'sad', healthFood: true,
-    mooTiers: [-5, -2, 0], affTiers: [0, 0, 3],
+  { id: 'greentea', ico: '🍵', name: '無糖綠茶',   sat: 0,  hlt: 20, sp: 'helpless', healthFood: true,
+    mooTiers: [-2, 0, 4], affTiers: [0, 1, 3],
     msgTiers: [
-      ['...這什麼。', '沒味道。', '你在折磨我？'],
-      ['...還行。', '淡的。', '勉強喝。'],
-      ['...習慣了。', '有點苦。還行。', '...謝了。']
+      ['謝謝。', '喝完了。', '綠茶。'],
+      ['謝謝。', '好喝。', '清爽。'],
+      ['謝謝你。', '很好。', '謝了。']
     ]
   },
-  { id: 'chicken',  ico: '🍗', name: '水煮雞胸肉', sat: 30, hlt: 30, sp: 'sad', healthFood: true,
-    mooTiers: [-20, -12, -6], affTiers: [-8, -3, 0],
+  { id: 'chicken',  ico: '🍗', name: '水煮雞胸肉', sat: 30, hlt: 30, sp: 'helpless', healthFood: true,
+    mooTiers: [-5, 2, 8], affTiers: [-2, 1, 3],
     msgTiers: [
-      ['你在懲罰我嗎。', '這叫吃飯？', '...難吃。'],
-      ['...吃完了。', '下次別這個。', '...哼。'],
-      ['...你擔心我？', '知道了。吃就吃。', '...沒你想的那麼難吃。（小聲）']
+      ['謝謝。', '吃完了。', '健康的。'],
+      ['謝謝。', '很好。', '吃完了。'],
+      ['謝謝你。', '非常好。', '謝了。']
     ]
   },
   // ── 雙角色食物（Ichiro 來訪時限定）────────────────────────────────────
@@ -163,24 +163,6 @@ export const REL_TITLES = [
   [160, '默契滿分']
 ]
 
-export const ICHIRO_FOOD_PREFS = {
-  porridge: {
-    moo: 22, aff: 12, sprite: 'heart',
-    msgs: ['Ichiro：草莓粥？我很喜歡。', 'Ichiro：甜甜的，很溫柔。', '{name}：...你真的喜歡這個？']
-  },
-  chicken: {
-    moo: 16, aff: 8, sprite: 'happy',
-    msgs: ['Ichiro：水煮雞胸肉很清爽。', 'Ichiro：謝謝，這個剛剛好。', '{name}：你也太健康了。']
-  },
-  coffee: {
-    moo: -5, aff: 0, sprite: 'helpless',
-    msgs: ['Ichiro：黑咖啡有點太苦了。', 'Ichiro：我可能還不太習慣。', '{name}：這才是咖啡。']
-  },
-  cig: {
-    moo: -20, aff: -8, sprite: 'angry',
-    msgs: ['Ichiro：這個我不喜歡。', 'Ichiro：味道太奇怪了。', '{name}：...不懂欣賞。']
-  }
-}
 
 export const TITLES = [
   [0,   '陌生人'],
@@ -522,18 +504,6 @@ export const usePetStore = defineStore('pet', {
           }
         }
 
-        // 非 Ichiro 訪客：若正在睡覺且時間已到則喚醒
-        if (this.activeVisitor && this.activeVisitor !== 'ichiro') {
-          const vcs = this.charactersState[this.activeVisitor]
-          if (vcs?.sleeping && vcs?.sleepEnd) {
-            this._sleepNowVisitor = nowMs()
-            this.visitorSprite = 'sleeping'
-            if (nowMs() >= vcs.sleepEnd) {
-              setTimeout(() => this.wakeUp(false, this.activeVisitor), 500)
-            }
-          }
-        }
-
         // ── 主角色狀態 ──────────────────────────────────────────────────
         if (d.charactersState) {
           // 新格式：直接還原 charactersState，對目前角色套用離線衰減
@@ -564,6 +534,32 @@ export const usePetStore = defineStore('pet', {
             cs.sick = false; cs.sickUntil = null; cs.hlt = clamp(cs.hlt - 5)
           }
           this._loadFromCharactersState(id)
+
+          // 非 Ichiro 訪客：套用離線衰減 + 睡眠偵測（需在 charactersState 還原後才讀）
+          if (this.activeVisitor && this.activeVisitor !== 'ichiro') {
+            const vid = this.activeVisitor
+            if (!this.charactersState[vid]) {
+              this.charactersState[vid] = createDefaultCharacterState()
+            }
+            const vcs = this.charactersState[vid]
+            if (vcs.sleeping) {
+              vcs.sat = clamp(vcs.sat - t * (0.25 / 64))
+              vcs.sta = clamp(vcs.sta + t * (0.5 / 60))
+            } else {
+              vcs.sat = clamp(vcs.sat - t * (0.85 / 64))
+              vcs.hlt = clamp(vcs.hlt - t * (0.06 / 60))
+              vcs.moo = clamp(vcs.moo - t * (0.5 / 64))
+              vcs.sta = clamp(vcs.sta - t * (0.3 / 64))
+            }
+            vcs.lowHealthSince = vcs.hlt < 30 ? (vcs.lowHealthSince || d.savedAt || nowMs()) : null
+            if (vcs.sleeping && vcs.sleepEnd) {
+              this._sleepNowVisitor = nowMs()
+              this.visitorSprite = 'sleeping'
+              if (nowMs() >= vcs.sleepEnd) {
+                setTimeout(() => this.wakeUp(false, vid), 500)
+              }
+            }
+          }
 
         } else {
           // 舊格式：把平坦 Toki 狀態遷移到 charactersState.toki
@@ -1137,6 +1133,9 @@ export const usePetStore = defineStore('pet', {
       this.activeVisitor = id
       this.visitorSprite = 'happy'
       this._sleepNowVisitor = 0
+      if (id !== 'ichiro' && !this.charactersState[id]) {
+        this.charactersState[id] = createDefaultCharacterState()
+      }
       this.reactPair('energetic', 'happy', 'near', this._vt('arrival'), 2400)
       this.save()
       return true
@@ -1239,16 +1238,21 @@ export const usePetStore = defineStore('pet', {
       this.hlt = clamp(this.hlt + (f.hlt || 0))
       this.sta = clamp(this.sta + (f.sta || 0))
 
+      const cp = CHARACTER_MAP[this.selectedCharacter]?.foods?.[id]
       if (f.healthFood) {
         // 好感三段：低 / 中 / 高
         const tier = this.aff >= 200 ? 2 : this.aff >= 100 ? 1 : 0
-        this.moo = clamp(this.moo + f.mooTiers[tier])
-        this.aff = clamp(this.aff + f.affTiers[tier], 0, 300)
-        this.react(f.sp, f.msgTiers[tier], 2200)
+        const mooTiers = cp?.mooTiers ?? f.mooTiers
+        const affTiers = cp?.affTiers ?? f.affTiers
+        const msgTiers = cp?.msgTiers ?? f.msgTiers
+        const sp       = cp?.sp       ?? f.sp
+        this.moo = clamp(this.moo + mooTiers[tier])
+        this.aff = clamp(this.aff + affTiers[tier], 0, 300)
+        this.react(sp, msgTiers[tier], 2200)
       } else {
-        this.moo = clamp(this.moo + (f.moo || 0))
-        this.aff = clamp(this.aff + (f.aff || 0), 0, 300)
-        this.react(f.sp, f.msgs, 2200)
+        this.moo = clamp(this.moo + (cp?.moo  ?? f.moo  ?? 0))
+        this.aff = clamp(this.aff + (cp?.aff  ?? f.aff  ?? 0), 0, 300)
+        this.react(cp?.sp ?? f.sp, cp?.msgs ?? f.msgs, 2200)
       }
       this.save()
     },
@@ -1279,15 +1283,18 @@ export const usePetStore = defineStore('pet', {
         }
       }
 
-      const pref = vid === 'ichiro' ? ICHIRO_FOOD_PREFS[id] : null
+      const pref = CHARACTER_MAP[vid]?.visitorFoods?.[id]
       if (pref) {
         addVisitorStats(f.sat || 0, f.hlt || 0, f.sta || 0, pref.moo, pref.aff)
-        this.reactPair(this.currentSprite, pref.sprite || 'happy', 'near', pref.msgs, 2400)
+        this.reactPair(this.currentSprite, pref.sp || 'happy', 'near', pref.msgs, 2400)
       } else if (f.healthFood) {
+        const charFoods = CHARACTER_MAP[vid]?.foods?.[id]
         const aff = getVisAff()
         const tier = aff >= 200 ? 2 : aff >= 100 ? 1 : 0
-        addVisitorStats(f.sat || 0, f.hlt || 0, f.sta || 0, f.mooTiers[tier], f.affTiers[tier])
-        this.reactPair(this.currentSprite, 'helpless', 'near', this._vd('food', 'healthFood'), 2400)
+        const mooTiers = charFoods?.mooTiers ?? f.mooTiers
+        const affTiers = charFoods?.affTiers ?? f.affTiers
+        addVisitorStats(f.sat || 0, f.hlt || 0, f.sta || 0, mooTiers[tier], affTiers[tier])
+        this.reactPair(this.currentSprite, charFoods?.sp ?? 'helpless', 'near', this._vd('food', 'healthFood'), 2400)
       } else {
         addVisitorStats(f.sat || 0, f.hlt || 0, f.sta || 0, f.moo || 0, f.aff || 0)
         const sprite = f.sp === 'sad' ? 'helpless' : f.sp
