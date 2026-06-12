@@ -53,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { usePetStore } from './stores/pet'
 import TokiSprite      from './components/TokiSprite.vue'
 import StatsPanel      from './components/StatsPanel.vue'
@@ -88,6 +88,14 @@ function showToast({ msg, type = 'gold' }) {
   toast.value = { visible: true, msg, type }
   toastTimer = setTimeout(() => { toast.value.visible = false }, 2800)
 }
+
+// ── In-app notification bridge ─────────────────────────────────────────────
+watch(() => store._inAppNotif, (notif) => {
+  if (!notif) return
+  const type = (notif.id.endsWith('_crit') || notif.id === 'toki_sick') ? 'red' : 'gold'
+  showToast({ msg: notif.body, type })
+  store._inAppNotif = null
+})
 
 // ── Save pulse ─────────────────────────────────────────────────────────────
 const savePulse = ref(false)

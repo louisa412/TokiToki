@@ -294,7 +294,8 @@ export const usePetStore = defineStore('pet', {
     locationMemory: {},   // { [locationId]: { visitCount, displeasure, lastVisited, refusedUntil } }
 
     // Notification dedup
-    _notifSent: {}
+    _notifSent: {},
+    _inAppNotif: null
   }),
 
   getters: {
@@ -1773,11 +1774,11 @@ export const usePetStore = defineStore('pet', {
       const nightMult = this.nightMode ? 2 : 1
       const DECAY = {
         tokiSat: 1.0 / 64,
-        tokiHlt: 0.08 / 60,
+        tokiHlt: 0.08 / 64,
         tokiMoo: (0.6 / 64) * nightMult,
         tokiSta: 0.4 / 8,
         ichiroSat: 0.85 / 64,
-        ichiroHlt: 0.06 / 60,
+        ichiroHlt: 0.06 / 64,
         ichiroMoo: (0.5 / 64) * nightMult,
         ichiroSta: 0.32 / 8
       }
@@ -1791,6 +1792,8 @@ export const usePetStore = defineStore('pet', {
         const h = Math.round(hlt)
         const m = Math.round(moo)
         const e = Math.round(sta)
+        // When health is already low, moo decays 1.5x faster (matches tick() mooMult)
+        const effectiveMooDec = decay.moo * (hlt < 30 ? 1.5 : 1)
 
         if (sat <= 0) jobs.push({ id: `${prefix}_sat_crit`, title: `${name} 餓壞了 🚨`, body: toki ? '飽食：0　「...我不餓。」（他在說謊）' : '飽食：0　他需要吃點東西。', delay: 1 })
         else {
@@ -1802,15 +1805,15 @@ export const usePetStore = defineStore('pet', {
         if (hlt <= 0) jobs.push({ id: `${prefix}_hlt_crit`, title: `${name} 健康亮紅燈 🆘`, body: '健康：0　他的狀態非常糟糕。', delay: 1 })
         else {
           jobs.push({ id: `${prefix}_hlt_crit`, title: `${name} 健康亮紅燈 🆘`, body: '健康：0　他的狀態非常糟糕。', delay: secsUntil(hlt, 0, decay.hlt) })
-          if (hlt <= 30) jobs.push({ id: `${prefix}_hlt_warn`, title: `${name} 不太舒服 💊`, body: `健康：${h}　該照顧他一下。`, delay: 1 })
-          else jobs.push({ id: `${prefix}_hlt_warn`, title: `${name} 不太舒服 💊`, body: `健康：30　該照顧他一下。`, delay: secsUntil(hlt, 30, decay.hlt) })
+          if (hlt <= 20) jobs.push({ id: `${prefix}_hlt_warn`, title: `${name} 不太舒服 💊`, body: `健康：${h}　該照顧他一下。`, delay: 1 })
+          else jobs.push({ id: `${prefix}_hlt_warn`, title: `${name} 不太舒服 💊`, body: `健康：20　該照顧他一下。`, delay: secsUntil(hlt, 20, decay.hlt) })
         }
 
         if (moo <= 0) jobs.push({ id: `${prefix}_moo_crit`, title: `${name} 心情跌到谷底 💢`, body: '心情：0　去陪他說說話。', delay: 1 })
         else {
-          jobs.push({ id: `${prefix}_moo_crit`, title: `${name} 心情跌到谷底 💢`, body: '心情：0　去陪他說說話。', delay: secsUntil(moo, 0, decay.moo) })
+          jobs.push({ id: `${prefix}_moo_crit`, title: `${name} 心情跌到谷底 💢`, body: '心情：0　去陪他說說話。', delay: secsUntil(moo, 0, effectiveMooDec) })
           if (moo <= 20) jobs.push({ id: `${prefix}_moo_warn`, title: `${name} 心情很差 😤`, body: `心情：${m}　去陪他說說話。`, delay: 1 })
-          else jobs.push({ id: `${prefix}_moo_warn`, title: `${name} 心情很差 😤`, body: `心情：20　去陪他說說話。`, delay: secsUntil(moo, 20, decay.moo) })
+          else jobs.push({ id: `${prefix}_moo_warn`, title: `${name} 心情很差 😤`, body: `心情：20　去陪他說說話。`, delay: secsUntil(moo, 20, effectiveMooDec) })
         }
 
         if (sta <= 0) jobs.push({ id: `${prefix}_sta_crit`, title: `${name} 精疲力竭了 😵`, body: '體力：0　他需要休息。', delay: 1 })
@@ -1833,6 +1836,19 @@ export const usePetStore = defineStore('pet', {
           toki: true
         })
         if (this.isSick) jobs.push({ id: 'toki_sick', title: `${this.tokiName} 生病了 🤒`, body: '他有點不舒服，去照顧他。', delay: 1 })
+      } else if (this.sleepEnd) {
+        // Sat still decays during sleep (0.3/8 per tick = 0.3/64 per second)
+        const SLEEP_SAT_DECAY = 0.3 / 64
+        const sleepRemainSec = Math.max(1, Math.ceil((this.sleepEnd - nowMs()) / 1000))
+        const satAfterSleep  = Math.max(0, this.sat - SLEEP_SAT_DECAY * sleepRemainSec)
+        const wakeTitle      = `${this.tokiName} 睡醒了 ☀️`
+        if (satAfterSleep < 20) {
+          // Estimate when sat will hit 0 during sleep (may be before wake)
+          const satZeroDelay = Math.max(1, Math.round(this.sat / SLEEP_SAT_DECAY))
+          jobs.push({ id: 'toki_sleepwake_sat', title: wakeTitle, body: '他睡了很久沒吃東西，記得餵他！', delay: Math.min(satZeroDelay, sleepRemainSec + 30) })
+        } else {
+          jobs.push({ id: 'toki_sleepwake', title: wakeTitle, body: '他睡醒了，去打個招呼吧。', delay: sleepRemainSec + 30 })
+        }
       }
 
       if (this.hasActiveVisitor && !this.isVisitorSleeping) {
@@ -1862,7 +1878,12 @@ export const usePetStore = defineStore('pet', {
       const bucket = Math.floor(nowMs() / 600000)
       if (this._notifSent[id] === bucket) return
       this._notifSent[id] = bucket
-      _tokiBridge({ action: 'schedule', id, title, body, delay })
+      if (typeof document !== 'undefined' && !document.hidden) {
+        // App is in foreground: iOS won't show banner, so surface as in-app toast
+        this._inAppNotif = { id, title, body }
+      } else {
+        _tokiBridge({ action: 'schedule', id, title, body, delay })
+      }
     }
   }
 })
