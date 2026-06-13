@@ -36,7 +36,7 @@ function pick(i) {
   selected.value = -1
   if (cards.value.every(c => c.gone)) {
     done.value = true
-    msg.value = gameLine(store, '清完了。Toki：...手牌整理得不錯。', '清完了。Ichiro：整理得很漂亮。')
+    msg.value = gameLine(store, `清完了。${store.tokiName}：...手牌整理得不錯。`, `清完了。${store.activeVisitorName}：整理得很漂亮。`)
     store.endGame('happy', [msg.value], 16, -10, 8)
   }
 }

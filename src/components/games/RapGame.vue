@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="rap-line">Toki：「{{ current.line }}」</div>
+    <div class="rap-line">{{ store.tokiName }}：「{{ current.line }}」</div>
     <div class="rap-round">第{{ roundIdx + 1 }}/{{ rounds.length }}句</div>
     <div style="display:flex;flex-direction:column;gap:6px">
       <button

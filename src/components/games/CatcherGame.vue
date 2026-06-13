@@ -52,8 +52,8 @@ function finish() {
   store.endGame(
     caught.value >= 6 ? 'happy' : 'helpless',
     [caught.value >= 6
-      ? gameLine(store, '反應不差。都接住了。', 'Ichiro：接得很穩，謝謝。')
-      : gameLine(store, '漏掉不少。Toki：手忙腳亂。', '漏掉不少。Ichiro：沒關係，再練就好。')],
+      ? gameLine(store, '反應不差。都接住了。', '{visitor}：接得很穩，謝謝。')
+      : gameLine(store, '漏掉不少。{name}：手忙腳亂。', '漏掉不少。{visitor}：沒關係，再練就好。')],
     caught.value >= 6 ? 22 : 10,
     -18,
     caught.value >= 6 ? 10 : 4

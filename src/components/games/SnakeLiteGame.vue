@@ -3,7 +3,15 @@
     <div class="gp">吃到撞牆結算</div>
     <div class="dim-txt">分數：{{ score }}</div>
     <div class="snake-grid">
-      <button v-for="cell in cells" :key="cell" class="snake-cell" :class="{ snake: snake.includes(cell), food: food === cell }" @click="turn(cell)">{{ food === cell ? '●' : snake.includes(cell) ? '■' : '' }}</button>
+      <div v-for="cell in cells" :key="cell" class="snake-cell" :class="{ snake: snake.includes(cell), food: food === cell }">{{ food === cell ? '●' : snake.includes(cell) ? '■' : '' }}</div>
+    </div>
+    <div class="snake-dpad">
+      <button class="dpad-btn" @click="setDir(-size)">▲</button>
+      <div class="dpad-row">
+        <button class="dpad-btn" @click="setDir(-1)">◄</button>
+        <button class="dpad-btn" @click="setDir(1)">►</button>
+      </div>
+      <button class="dpad-btn" @click="setDir(size)">▼</button>
     </div>
   </div>
 </template>
@@ -25,14 +33,9 @@ let loop = null
 onMounted(() => { loop = setInterval(step, 380) })
 onUnmounted(() => clearInterval(loop))
 
-function turn(cell) {
-  const head = snake.value[snake.value.length - 1]
-  const hx = head % size
-  const hy = Math.floor(head / size)
-  const cx = cell % size
-  const cy = Math.floor(cell / size)
-  if (Math.abs(cx - hx) > Math.abs(cy - hy)) dir.value = cx > hx ? 1 : -1
-  else dir.value = cy > hy ? size : -size
+function setDir(newDir) {
+  if (newDir === -dir.value) return
+  dir.value = newDir
 }
 function placeFood() {
   let next = Math.floor(Math.random() * cells.length)
@@ -48,8 +51,8 @@ function step() {
     store.endGame(
       score.value >= 4 ? 'energetic' : 'sad',
       [score.value >= 4
-        ? gameLine(store, '活得夠久。', 'Ichiro：撐得很久，很厲害。')
-        : gameLine(store, '撞牆了。Toki：看路。', '撞牆了。Ichiro：下次慢慢來。')],
+        ? gameLine(store, '活得夠久。', '{visitor}：撐得很久，很厲害。')
+        : gameLine(store, '撞牆了。{name}：看路。', '撞牆了。{visitor}：下次慢慢來。')],
       score.value >= 4 ? 20 : 8,
       -18,
       score.value >= 4 ? 9 : 3
@@ -65,3 +68,34 @@ function step() {
   }
 }
 </script>
+
+<style scoped>
+.snake-dpad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+}
+.dpad-row {
+  display: flex;
+  gap: 4px;
+}
+.dpad-btn {
+  width: 52px;
+  height: 52px;
+  font-size: 20px;
+  background: var(--sur);
+  border: 1px solid var(--bd);
+  border-radius: 4px;
+  color: var(--txt);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dpad-btn:active {
+  background: rgba(64,150,232,.15);
+  border-color: var(--blue);
+}
+</style>

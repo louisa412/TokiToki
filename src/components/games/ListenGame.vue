@@ -112,7 +112,7 @@ function next() {
     done.value = true
     store.endGame(
       'praised',
-      gameMsgs(store, ['......嗯。你一直在聽。', '沒什麼，感謝。', '...謝了。這句忘掉。'], ['Ichiro：謝謝你聽我說。', '能慢慢講完，感覺輕鬆多了。']),
+      gameMsgs(store, ['......嗯。你一直在聽。', '沒什麼，感謝。', '...謝了。這句忘掉。'], ['{visitor}：謝謝你聽我說。', '能慢慢講完，感覺輕鬆多了。']),
       5, -10, 25
     )
   } else {

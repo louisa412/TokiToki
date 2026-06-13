@@ -66,7 +66,7 @@ const comment = ref('')
 const q = computed(() => questions[qIdx.value])
 const displayQuestion = computed(() => {
   if (!ichiroMode || q.value.question !== 'Toki 最討厭什麼？') return q.value.question
-  return 'Ichiro 比較擅長什麼？'
+  return `${store.activeVisitorName} 比較擅長什麼？`
 })
 const displayOptions = computed(() => {
   if (!ichiroMode || q.value.question !== 'Toki 最討厭什麼？') return q.value.options
@@ -91,7 +91,7 @@ function pick(i) {
   const correct = i === answerIndex.value
   if (correct) score.value++
   comment.value = ichiroMode && q.value.question === 'Toki 最討厭什麼？'
-    ? (correct ? 'Ichiro：嗯，我比較喜歡安靜地完成事情。' : 'Ichiro：這題有點難呢。')
+    ? (correct ? `${store.activeVisitorName}：嗯，我比較喜歡安靜地完成事情。` : `${store.activeVisitorName}：這題有點難呢。`)
     : (correct ? q.value.ok : q.value.wrong)
 
   setTimeout(() => {
@@ -114,7 +114,7 @@ function pick(i) {
           ],
           [
             perfect ? `全對。${s}/${questions.length}。很厲害。` : `${s}/${questions.length}。`,
-            perfect ? 'Ichiro：你記得好多。' : good ? 'Ichiro：答得不錯。' : 'Ichiro：下次一起再看一次。',
+            perfect ? '{visitor}：你記得好多。' : good ? '{visitor}：答得不錯。' : '{visitor}：下次一起再看一次。',
           ]
         ),
         perfect ? 20 : good ? 10 : 3,

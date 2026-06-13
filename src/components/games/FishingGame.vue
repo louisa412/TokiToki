@@ -17,10 +17,10 @@ import { gameLine } from './gameTarget'
 const store = usePetStore()
 const caught = ref(null)
 const fishPool = [
-  { ico: '🐟', name: '小沙丁魚', toki: 'Toki：...至少不是空手。', ichiro: 'Ichiro：小小的，很可愛。', mood: 10, aff: 5 },
-  { ico: '🐠', name: '彩色小魚', toki: 'Toki：顏色太亮了。普通。', ichiro: 'Ichiro：顏色很漂亮。像海邊的光。', mood: 14, aff: 7 },
-  { ico: '🦑', name: '迷路的烏賊', toki: 'Toki：牠看起來比你冷靜。', ichiro: 'Ichiro：牠是不是迷路了？有點擔心。', mood: 16, aff: 8 },
-  { ico: '🐡', name: '稀有河豚', toki: 'Toki：...這個不錯。你運氣還行。', ichiro: 'Ichiro：好少見。今天運氣很好。', mood: 24, aff: 12 }
+  { ico: '🐟', name: '小沙丁魚', toki: '{name}：...至少不是空手。', ichiro: '{visitor}：小小的，很可愛。', mood: 10, aff: 5 },
+  { ico: '🐠', name: '彩色小魚', toki: '{name}：顏色太亮了。普通。', ichiro: '{visitor}：顏色很漂亮。像海邊的光。', mood: 14, aff: 7 },
+  { ico: '🦑', name: '迷路的烏賊', toki: '{name}：牠看起來比你冷靜。', ichiro: '{visitor}：牠是不是迷路了？有點擔心。', mood: 16, aff: 8 },
+  { ico: '🐡', name: '稀有河豚', toki: '{name}：...這個不錯。你運氣還行。', ichiro: '{visitor}：好少見。今天運氣很好。', mood: 24, aff: 12 }
 ]
 
 function fish() {

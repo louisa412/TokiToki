@@ -28,7 +28,7 @@ function tap(n) {
   next.value++
   if (next.value > 12) {
     done.value = true
-    store.endGame('praised', gameMsgs(store, ['順序沒亂。還行。'], ['Ichiro：順序很穩，做得很好。']), 18, -8, 10)
+    store.endGame('praised', gameMsgs(store, ['順序沒亂。還行。'], ['{visitor}：順序很穩，做得很好。']), 18, -8, 10)
   }
 }
 </script>

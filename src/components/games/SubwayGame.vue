@@ -67,24 +67,24 @@ const ROUTE_JSON = {
   ],
   events: {
     crowded: [
-      { toki: '車廂裡有人在看你。Toki 皺眉：看什麼。', ichiro: '車廂裡有點擠。Ichiro 小聲說：我們站旁邊一點吧。', mood: -5, aff: 1 },
-      { toki: '尖峰時間擠到肩膀。Toki：下次避開這班。', ichiro: '尖峰時間有點辛苦。Ichiro：下次可以避開這班。', mood: -4, aff: 2 },
-      { toki: '站在門邊剛好不用擠。Toki：...算你會選。', ichiro: '站在門邊剛好不用擠。Ichiro：這裡很舒服。', mood: 3, aff: 3 }
+      { toki: '車廂裡有人在看你。{name} 皺眉：看什麼。', ichiro: '車廂裡有點擠。{visitor} 小聲說：我們站旁邊一點吧。', mood: -5, aff: 1 },
+      { toki: '尖峰時間擠到肩膀。{name}：下次避開這班。', ichiro: '尖峰時間有點辛苦。{visitor}：下次可以避開這班。', mood: -4, aff: 2 },
+      { toki: '站在門邊剛好不用擠。{name}：...算你會選。', ichiro: '站在門邊剛好不用擠。{visitor}：這裡很舒服。', mood: 3, aff: 3 }
     ],
     soft: [
-      { toki: '找到空位坐下。Toki 把耳機戴上。', ichiro: '找到空位坐下。Ichiro：可以休息一下了。', stamina: 5, mood: 3, aff: 3 },
-      { toki: '車廂很安靜。Toki 看起來沒那麼煩。', ichiro: '車廂很安靜。Ichiro 說這段路很舒服。', mood: 6, aff: 4 },
-      { toki: '列車慢慢晃著，Toki 沒說話但也沒走開。', ichiro: '列車慢慢晃著，Ichiro 安靜地看著窗外。', mood: 4, aff: 5 }
+      { toki: '找到空位坐下。{name} 把耳機戴上。', ichiro: '找到空位坐下。{visitor}：可以休息一下了。', stamina: 5, mood: 3, aff: 3 },
+      { toki: '車廂很安靜。{name} 看起來沒那麼煩。', ichiro: '車廂很安靜。{visitor} 說這段路很舒服。', mood: 6, aff: 4 },
+      { toki: '列車慢慢晃著，{name} 沒說話但也沒走開。', ichiro: '列車慢慢晃著，{visitor} 安靜地看著窗外。', mood: 4, aff: 5 }
     ],
     delay: [
-      { toki: '錯過班車等了 10 分鐘。Toki：你確定會看路線圖？', ichiro: '錯過班車等了 10 分鐘。Ichiro：沒關係，慢慢來。', extraStops: 1, mood: -3, aff: 1 },
-      { toki: '轉乘口施工，只好繞一圈。Toki：麻煩死了。', ichiro: '轉乘口施工，只好繞一圈。Ichiro：這邊也能到嗎？', extraStops: 1, mood: -5, aff: 2 },
-      { toki: '走錯月台，但意外發現很安靜的角落。', ichiro: '走錯月台，但意外發現很安靜的角落。Ichiro 看起來很喜歡。', mood: 5, aff: 4 }
+      { toki: '錯過班車等了 10 分鐘。{name}：你確定會看路線圖？', ichiro: '錯過班車等了 10 分鐘。{visitor}：沒關係，慢慢來。', extraStops: 1, mood: -3, aff: 1 },
+      { toki: '轉乘口施工，只好繞一圈。{name}：麻煩死了。', ichiro: '轉乘口施工，只好繞一圈。{visitor}：這邊也能到嗎？', extraStops: 1, mood: -5, aff: 2 },
+      { toki: '走錯月台，但意外發現很安靜的角落。', ichiro: '走錯月台，但意外發現很安靜的角落。{visitor} 看起來很喜歡。', mood: 5, aff: 4 }
     ],
     view: [
-      { toki: '偶然看到夕陽映在車窗上。Toki：...還行。', ichiro: '偶然看到夕陽映在車窗上。Ichiro：好漂亮。', mood: 10, aff: 5 },
-      { toki: '高架路段看得到海。Toki 多看了一眼。', ichiro: '高架路段看得到海。Ichiro：下次可以再來。', mood: 8, aff: 5 },
-      { toki: '到站，Toki 說這裡沒什麼好看的。可是他多看了兩眼。', ichiro: '到站，Ichiro 說這裡很安靜，想多待一下。', mood: 4, aff: 3 }
+      { toki: '偶然看到夕陽映在車窗上。{name}：...還行。', ichiro: '偶然看到夕陽映在車窗上。{visitor}：好漂亮。', mood: 10, aff: 5 },
+      { toki: '高架路段看得到海。{name} 多看了一眼。', ichiro: '高架路段看得到海。{visitor}：下次可以再來。', mood: 8, aff: 5 },
+      { toki: '到站，{name} 說這裡沒什麼好看的。可是他多看了兩眼。', ichiro: '到站，{visitor} 說這裡很安靜，想多待一下。', mood: 4, aff: 3 }
     ]
   }
 }
@@ -93,7 +93,7 @@ const route = ref(generateRoute())
 const currentIndex = ref(0)
 const extraStops = ref(0)
 const finished = ref(false)
-const lastEventText = ref(ichiroMode ? 'Ichiro：我們慢慢看路線吧。' : 'Toki：別坐錯。')
+const lastEventText = ref(ichiroMode ? `${store.activeVisitorName}：我們慢慢看路線吧。` : `${store.tokiName}：別坐錯。`)
 const logs = ref([])
 const totals = ref({ mood: 0, aff: 0, stamina: 0 })
 const summary = ref('')
@@ -127,7 +127,8 @@ function chooseLine(option) {
   totals.value.stamina += event.stamina || 0
   extraStops.value += event.extraStops || 0
 
-  const text = gameLine(store, event.toki, event.ichiro)
+  const raw = gameLine(store, event.toki, event.ichiro)
+  const text = raw.replace(/\{name\}/g, store.tokiName).replace(/\{visitor\}/g, store.activeVisitorName)
   lastEventText.value = text
   logs.value.push(`${currentStation.value} → ${option.name}：${text}`)
 
@@ -165,13 +166,21 @@ function finishTrip() {
 function buildSummary(detours, goodMoments) {
   const from = route.value.start
   const to = route.value.goal
+  const toki = store.tokiName
+  const visitor = store.activeVisitorName
   if (detours >= 2) {
-    return gameLine(store, `從${from}繞到${to}，中間走錯了幾段路。Toki：下次別帶我來這種地方。可是他還是把路線圖收好了。`, `從${from}繞到${to}，中間走錯了幾段路。Ichiro：雖然繞遠了，但也看到不少地方。`)
+    return gameLine(store,
+      `從${from}繞到${to}，中間走錯了幾段路。${toki}：下次別帶我來這種地方。可是他還是把路線圖收好了。`,
+      `從${from}繞到${to}，中間走錯了幾段路。${visitor}：雖然繞遠了，但也看到不少地方。`)
   }
   if (goodMoments >= 2) {
-    return gameLine(store, `從${from}到${to}的路上，剛好遇到一些不壞的風景。Toki：...只是剛好而已。`, `從${from}到${to}的路上，剛好遇到很好的風景。Ichiro：下次也可以一起走嗎？`)
+    return gameLine(store,
+      `從${from}到${to}的路上，剛好遇到一些不壞的風景。${toki}：...只是剛好而已。`,
+      `從${from}到${to}的路上，剛好遇到很好的風景。${visitor}：下次也可以一起走嗎？`)
   }
-  return gameLine(store, `你們從${from}搭到${to}，路線不算完美，但最後還是到了。Toki：普通。沒有很差。`, `你和 Ichiro 從${from}搭到${to}，路線不算完美，但最後還是到了。Ichiro：抵達了，辛苦了。`)
+  return gameLine(store,
+    `你們從${from}搭到${to}，路線不算完美，但最後還是到了。${toki}：普通。沒有很差。`,
+    `你和 ${visitor} 從${from}搭到${to}，路線不算完美，但最後還是到了。${visitor}：抵達了，辛苦了。`)
 }
 
 function pick(arr) {

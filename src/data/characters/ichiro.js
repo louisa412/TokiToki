@@ -21,10 +21,10 @@ export default {
 
   // ── Visitor food preferences (formerly ICHIRO_FOOD_PREFS) ─────────────────
   visitorFoods: {
-    porridge: { moo: 22,  aff: 12,  sp: 'heart',    msgs: ['Ichiro：草莓粥？我很喜歡。', 'Ichiro：甜甜的，很溫柔。', '{name}：...你真的喜歡這個？'] },
-    chicken:  { moo: 16,  aff: 8,   sp: 'happy',    msgs: ['Ichiro：水煮雞胸肉很清爽。', 'Ichiro：謝謝，這個剛剛好。', '{name}：你也太健康了。'] },
-    coffee:   { moo: -5,  aff: 0,   sp: 'helpless', msgs: ['Ichiro：黑咖啡有點太苦了。', 'Ichiro：我可能還不太習慣。', '{name}：這才是咖啡。'] },
-    cig:      { moo: -20, aff: -8,  sp: 'angry',    msgs: ['Ichiro：這個我不喜歡。', 'Ichiro：味道太奇怪了。', '{name}：...不懂欣賞。'] }
+    porridge: { moo: 22,  aff: 12,  sp: 'heart',    msgs: ['{visitor}：草莓粥？我很喜歡。', '{visitor}：甜甜的，很溫柔。', '{name}：...你真的喜歡這個？'] },
+    chicken:  { moo: 16,  aff: 8,   sp: 'happy',    msgs: ['{visitor}：水煮雞胸肉很清爽。', '{visitor}：謝謝，這個剛剛好。', '{name}：你也太健康了。'] },
+    coffee:   { moo: -5,  aff: 0,   sp: 'helpless', msgs: ['{visitor}：黑咖啡有點太苦了。', '{visitor}：我可能還不太習慣。', '{name}：這才是咖啡。'] },
+    cig:      { moo: -20, aff: -8,  sp: 'angry',    msgs: ['{visitor}：這個我不喜歡。', '{visitor}：味道太奇怪了。', '{name}：...不懂欣賞。'] }
   },
 
   // ── Dialogue ──────────────────────────────────────────────────────────────

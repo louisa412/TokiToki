@@ -50,8 +50,8 @@ function finish(win) {
   store.endGame(
     win ? 'energetic' : 'helpless',
     [win
-      ? gameLine(store, '躲得很乾淨。Toki：...不錯。', '躲得很乾淨。Ichiro：剛剛很集中。')
-      : gameLine(store, '中彈了。Toki：看清楚再動。', '中彈了。Ichiro：還好只是遊戲。')],
+      ? gameLine(store, '躲得很乾淨。{name}：...不錯。', '躲得很乾淨。{visitor}：剛剛很集中。')
+      : gameLine(store, '中彈了。{name}：看清楚再動。', '中彈了。{visitor}：還好只是遊戲。')],
     win ? 24 : 8,
     -18,
     win ? 12 : 3

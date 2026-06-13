@@ -29,8 +29,8 @@ function open(box) {
     done.value = true
     const found = !!box.prize
     message.value = found
-      ? gameLine(store, '找到了舊耳機。Toki：...還能用。', '找到了舊耳機。Ichiro：整理得很仔細。')
-      : gameLine(store, '只找到一堆灰。Toki：你翻得很認真。', '只找到一堆灰。Ichiro：至少確認過了。')
+      ? gameLine(store, `找到了舊耳機。${store.tokiName}：...還能用。`, `找到了舊耳機。${store.activeVisitorName}：整理得很仔細。`)
+      : gameLine(store, `只找到一堆灰。${store.tokiName}：你翻得很認真。`, `只找到一堆灰。${store.activeVisitorName}：至少確認過了。`)
     store.endGame(found ? 'happy' : 'helpless', [message.value], found ? 18 : 8, -5, found ? 9 : 4)
   }
 }
