@@ -1816,10 +1816,10 @@ export const usePetStore = defineStore('pet', {
         tokiHlt: 0.08 / 64,
         tokiMoo: (0.6 / 64) * nightMult,
         tokiSta: 0.3 / 64,
-        ichiroSat: 0.85 / 64,
-        ichiroHlt: 0.06 / 64,
-        ichiroMoo: (0.5 / 64) * nightMult,
-        ichiroSta: 0.3 / 64
+        visitorSat: 0.85 / 64,
+        visitorHlt: 0.06 / 64,
+        visitorMoo: (0.5 / 64) * nightMult,
+        visitorSta: 0.3 / 64
       }
       const secsUntil = (val, threshold, decay) =>
         decay <= 0 ? null : Math.max(1, Math.round((val - threshold) / decay))
@@ -1898,7 +1898,7 @@ export const usePetStore = defineStore('pet', {
           hlt: this.visitorHlt,
           moo: this.visitorMoo,
           sta: this.visitorSta,
-          decay: { sat: DECAY.ichiroSat, hlt: DECAY.ichiroHlt, moo: DECAY.ichiroMoo, sta: DECAY.ichiroSta }
+          decay: { sat: DECAY.visitorSat, hlt: DECAY.visitorHlt, moo: DECAY.visitorMoo, sta: DECAY.visitorSta }
         })
       }
 
