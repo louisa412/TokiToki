@@ -74,8 +74,8 @@ const hasNightFoods = FOODS.some(f => f.nightOnly)
 const target = computed(() => props.target)
 const isActionDisabled = computed(() => store.reacting || store.targetIsSleeping(props.target))
 const targetNote = computed(() => {
-  if (props.target === 'ichiro') return '餵食 Ichiro'
-  if (props.target === 'duo') return `${store.tokiName} 和 Ichiro 的雙人食物`
+  if (props.target === 'ichiro') return `餵食 ${store.activeVisitorName}`
+  if (props.target === 'duo') return `${store.tokiName} 和 ${store.activeVisitorName} 的雙人食物`
   return `餵食 ${store.tokiName}`
 })
 
@@ -150,7 +150,7 @@ function handle(id) {
   if (result === 'disturbed') {
     emit('toast', { msg: '他不理你', type: 'red' })
   } else if (result === 'need_visitor') {
-    emit('toast', { msg: '這個要 Ichiro 來訪時才能用', type: 'blue' })
+    emit('toast', { msg: '這個要訪客來訪時才能用', type: 'blue' })
   } else if (result === 'duo_only') {
     emit('toast', { msg: '這是雙人食物', type: 'blue' })
   } else if (result === 'single_only') {
@@ -167,7 +167,7 @@ function handleInventory(index, foodId) {
   if (result === 'disturbed') {
     emit('toast', { msg: '他不理你', type: 'red' })
   } else if (result === 'need_visitor') {
-    emit('toast', { msg: '這個要 Ichiro 來訪時才能用', type: 'blue' })
+    emit('toast', { msg: '這個要訪客來訪時才能用', type: 'blue' })
   } else if (result === 'sleeping') {
     emit('toast', { msg: `${store.tokiName} 正在睡`, type: 'blue' })
   }
@@ -175,6 +175,6 @@ function handleInventory(index, foodId) {
 
 function emitSleepToast() {
   if (props.target === 'duo') emit('toast', { msg: '有人正在睡，雙人食物暫停', type: 'blue' })
-  else emit('toast', { msg: `${props.target === 'ichiro' ? 'Ichiro' : store.tokiName} 正在睡`, type: 'blue' })
+  else emit('toast', { msg: `${props.target === 'ichiro' ? store.activeVisitorName : store.tokiName} 正在睡`, type: 'blue' })
 }
 </script>

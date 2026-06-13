@@ -52,7 +52,7 @@
 
   </div>
   <div v-else class="care-list">
-    <div class="target-note">{{ store.tokiName }} 和 Ichiro 的雙人照護</div>
+    <div class="target-note">{{ store.tokiName }} 和 {{ store.activeVisitorName }} 的雙人照護</div>
     <div class="care-grid">
       <button
         v-for="item in DUO_CARE_ACTIONS"
@@ -85,7 +85,7 @@ const props = defineProps({
 const urgentItems = CARE_ITEMS.filter(i => i.type === 'urgent')
 const dailyItems  = CARE_ITEMS.filter(i => i.type === 'daily' || i.type === 'weekly')
 
-const targetLabel = computed(() => props.target === 'ichiro' ? 'Ichiro' : store.tokiName)
+const targetLabel = computed(() => props.target === 'ichiro' ? store.activeVisitorName : store.tokiName)
 const targetHealth = computed(() => props.target === 'ichiro' ? store.hltIchiro : store.hlt)
 const checkupDone = computed(() => props.target === 'ichiro' ? store.checkupDoneIchiro : store.checkupDone)
 const canUseUrgent = computed(() => targetHealth.value <= 30 || (props.target === 'toki' && store.isSick))
@@ -121,7 +121,7 @@ function handle(id) {
   } else if (result === 'disturbed') {
     emit('toast', { msg: '他不理你', type: 'red' })
   } else if (result === 'need_visitor') {
-    emit('toast', { msg: '先讓 Ichiro 來訪', type: 'blue' })
+    emit('toast', { msg: '先讓訪客來訪', type: 'blue' })
   } else if (result === 'sleeping') emitSleepToast()
 }
 
