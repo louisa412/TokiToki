@@ -3,7 +3,13 @@
     <div class="gp">吃到撞牆結算</div>
     <div class="dim-txt">分數：{{ score }}</div>
     <div class="snake-grid">
-      <button v-for="cell in cells" :key="cell" class="snake-cell" :class="{ snake: snake.includes(cell), food: food === cell }" @click="turn(cell)">{{ food === cell ? '●' : snake.includes(cell) ? '■' : '' }}</button>
+      <div v-for="cell in cells" :key="cell" class="snake-cell" :class="{ snake: snake.includes(cell), food: food === cell }">{{ food === cell ? '●' : snake.includes(cell) ? '■' : '' }}</div>
+    </div>
+    <div class="snake-dpad">
+      <button class="snake-dpad-btn" @click="setDir(-size)">↑</button>
+      <button class="snake-dpad-btn" @click="setDir(-1)">←</button>
+      <button class="snake-dpad-btn" @click="setDir(1)">→</button>
+      <button class="snake-dpad-btn" @click="setDir(size)">↓</button>
     </div>
   </div>
 </template>
@@ -22,18 +28,26 @@ const dir = ref(1)
 const score = ref(0)
 let loop = null
 
-onMounted(() => { loop = setInterval(step, 380) })
-onUnmounted(() => clearInterval(loop))
+onMounted(() => {
+  loop = setInterval(step, 560)
+  window.addEventListener('keydown', onKey)
+})
+onUnmounted(() => {
+  clearInterval(loop)
+  window.removeEventListener('keydown', onKey)
+})
 
-function turn(cell) {
-  const head = snake.value[snake.value.length - 1]
-  const hx = head % size
-  const hy = Math.floor(head / size)
-  const cx = cell % size
-  const cy = Math.floor(cell / size)
-  if (Math.abs(cx - hx) > Math.abs(cy - hy)) dir.value = cx > hx ? 1 : -1
-  else dir.value = cy > hy ? size : -size
+function setDir(d) {
+  // 禁止直接反向
+  if (d === -dir.value) return
+  dir.value = d
 }
+
+function onKey(e) {
+  const map = { ArrowUp: -size, ArrowDown: size, ArrowLeft: -1, ArrowRight: 1 }
+  if (map[e.key] !== undefined) { e.preventDefault(); setDir(map[e.key]) }
+}
+
 function placeFood() {
   let next = Math.floor(Math.random() * cells.length)
   while (snake.value.includes(next)) next = Math.floor(Math.random() * cells.length)
