@@ -143,7 +143,7 @@ onMounted(() => {
   // 1s clock + sleep countdown
   clockId = setInterval(() => {
     updateClock()
-    if (store.isSleeping || store.isIchiroSleeping) store.tickSleep()
+    if (store.isSleeping || store.isVisitorSleeping) store.tickSleep()
   }, 1000)
 
   // 30s autosave

@@ -1657,6 +1657,7 @@ export const usePetStore = defineStore('pet', {
       this.sleepStartIchiro = null
       this.visitorSprite    = 'happy'
 
+      const vn = this.activeVisitorName
       if (forced && type === 'nap') {
         const frac = Math.min(sleptMs / NAP_MS, 1)
         this.mooIchiro = clamp(this.mooIchiro - 8)
@@ -1669,6 +1670,7 @@ export const usePetStore = defineStore('pet', {
         this.hltIchiro = clamp(this.hltIchiro + 8)
         this.staIchiro = clamp(this.staIchiro + 25)
         this.reactPair(this.currentSprite, 'happy', 'hearts', this._vd('sleep', 'naturalNap'), 2200)
+        this._sendNotif('visitor_sleepend', `${vn} 睡醒了 ☀️`, '小睡結束了，去看看他。', 1)
       } else {
         const frac = Math.min(sleptMs / BED_MS, 1)
         this.mooIchiro = clamp(this.mooIchiro + Math.round(20 * frac))
@@ -1677,8 +1679,10 @@ export const usePetStore = defineStore('pet', {
         this.satIchiro = clamp(this.satIchiro - 18)
         if (frac >= 0.9) {
           this.reactPair(this.currentSprite, 'happy', 'hearts', this._vd('sleep', 'fullSleep'), 2200)
+          this._sendNotif('visitor_sleepend', `${vn} 睡醒了 ☀️`, '他已經起來了，去打個招呼吧。', 1)
         } else {
           this.reactPair(this.currentSprite, 'helpless', 'near', this._vd('sleep', 'partialSleep'), 2200)
+          this._sendNotif('visitor_sleepend', `${vn} 睡醒了（睡不飽）`, '他有點不高興，去陪他說說話。', 1)
         }
       }
       this.save()
@@ -1696,6 +1700,7 @@ export const usePetStore = defineStore('pet', {
       this._sleepNowVisitor = 0
       this.visitorSprite    = 'happy'
 
+      const vn = this.activeVisitorName
       if (forced && type === 'nap') {
         const frac = Math.min(sleptMs / NAP_MS, 1)
         cs.moo = clamp(cs.moo - 8)
@@ -1706,6 +1711,7 @@ export const usePetStore = defineStore('pet', {
       } else if (type === 'nap') {
         cs.moo = clamp(cs.moo + 14); cs.hlt = clamp(cs.hlt + 8); cs.sta = clamp(cs.sta + 25)
         this.reactPair(this.currentSprite, 'happy', 'hearts', this._vd('sleep', 'naturalNap'), 2200)
+        this._sendNotif('visitor_sleepend', `${vn} 睡醒了 ☀️`, '小睡結束了，去看看他。', 1)
       } else {
         const frac = Math.min(sleptMs / BED_MS, 1)
         cs.moo = clamp(cs.moo + Math.round(20 * frac))
@@ -1714,8 +1720,10 @@ export const usePetStore = defineStore('pet', {
         cs.sat = clamp(cs.sat - 18)
         if (frac >= 0.9) {
           this.reactPair(this.currentSprite, 'happy', 'hearts', this._vd('sleep', 'fullSleep'), 2200)
+          this._sendNotif('visitor_sleepend', `${vn} 睡醒了 ☀️`, '他已經起來了，去打個招呼吧。', 1)
         } else {
           this.reactPair(this.currentSprite, 'helpless', 'near', this._vd('sleep', 'partialSleep'), 2200)
+          this._sendNotif('visitor_sleepend', `${vn} 睡醒了（睡不飽）`, '他有點不高興，去陪他說說話。', 1)
         }
       }
       this.save()
@@ -1800,6 +1808,7 @@ export const usePetStore = defineStore('pet', {
         if (h > 0 && h < 20) this._sendNotif('visitor_hlt_warn', `${vn} 健康警告 💊`,   `健康：${h}　要照顧他。`)
         if (m > 0 && m < 20) this._sendNotif('visitor_moo_warn', `${vn} 心情很差 🌧`,   `心情：${m}　去陪他說說話。`)
         if (e > 0 && e < 15) this._sendNotif('visitor_sta_warn', `${vn} 快沒體力了 😪`, `體力：${e}　他需要休息。`)
+        if (this.visitorShowsSick) this._sendNotif('visitor_sick', `${vn} 看起來不太舒服 🤒`, '他身體不太好，去照顧他吧。')
       }
 
       // 第 14 天倒數通知
@@ -1900,6 +1909,15 @@ export const usePetStore = defineStore('pet', {
           sta: this.visitorSta,
           decay: { sat: DECAY.visitorSat, hlt: DECAY.visitorHlt, moo: DECAY.visitorMoo, sta: DECAY.visitorSta }
         })
+        if (this.visitorShowsSick) jobs.push({ id: 'visitor_sick', title: `${this.activeVisitorName} 看起來不太舒服 🤒`, body: '他身體不太好，去照顧他吧。', delay: 1 })
+      } else if (this.hasActiveVisitor && this.isVisitorSleeping) {
+        const sleepEndMs = this.activeVisitor === 'ichiro'
+          ? this.sleepEndIchiro
+          : this.charactersState[this.activeVisitor]?.sleepEnd
+        if (sleepEndMs) {
+          const sleepRemainSec = Math.max(1, Math.ceil((sleepEndMs - nowMs()) / 1000))
+          jobs.push({ id: 'visitor_sleepend', title: `${this.activeVisitorName} 睡醒了 ☀️`, body: '他睡醒了，去打個招呼吧。', delay: sleepRemainSec + 30 })
+        }
       }
 
       _tokiBridge({ action: 'cancelAll' })
