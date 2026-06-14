@@ -496,7 +496,7 @@ export const usePetStore = defineStore('pet', {
           this._sleepNowIchiro  = nowMs()
           this.visitorSprite    = 'sleeping'
           if (nowMs() >= d.sleepEndIchiro) {
-            setTimeout(() => this.wakeUp(false, 'ichiro'), 500)
+            setTimeout(() => this._wakeActiveVisitor(false), 500)
           }
         }
 
@@ -552,7 +552,7 @@ export const usePetStore = defineStore('pet', {
               this._sleepNowVisitor = nowMs()
               this.visitorSprite = 'sleeping'
               if (nowMs() >= vcs.sleepEnd) {
-                setTimeout(() => this.wakeUp(false, vid), 500)
+                setTimeout(() => this._wakeActiveVisitor(false), 500)
               }
             }
           }
@@ -1599,8 +1599,7 @@ export const usePetStore = defineStore('pet', {
 
     wakeUp(forced = false, target = 'toki') {
       if (target !== 'toki') {
-        if (this.activeVisitor === 'ichiro') return this._wakeIchiro(forced)
-        return this._wakeVisitor(forced, this.activeVisitor)
+        return this._wakeActiveVisitor(forced)
       }
       const type = this.sleeping
       if (!type) return
@@ -1645,6 +1644,12 @@ export const usePetStore = defineStore('pet', {
         }
       }
       this.save()
+    },
+
+    _wakeActiveVisitor(forced = false) {
+      if (!this.activeVisitor) return
+      if (this.activeVisitor === 'ichiro') return this._wakeIchiro(forced)
+      return this._wakeVisitor(forced, this.activeVisitor)
     },
 
     _wakeIchiro(forced = false) {
@@ -1756,7 +1761,7 @@ export const usePetStore = defineStore('pet', {
               ? `${visName}：...zz  剩 ${_fmtTime(rem)}`
               : `${visName}：...zzz  剩 ${_fmtTime(rem)}`)
           }
-          if (rem <= 0) this.wakeUp(false, 'ichiro')
+          if (rem <= 0) this._wakeActiveVisitor(false)
         } else {
           this._sleepNowVisitor = nowMs()
           const rem = this.sleepRemainingVisitor
@@ -1766,8 +1771,23 @@ export const usePetStore = defineStore('pet', {
               ? `${visName}：...zz  剩 ${_fmtTime(rem)}`
               : `${visName}：...zzz  剩 ${_fmtTime(rem)}`)
           }
-          if (rem <= 0) this.wakeUp(false, vid)
+          if (rem <= 0) this._wakeActiveVisitor(false)
         }
+      }
+    },
+
+    wakeExpiredSleepers() {
+      const now = nowMs()
+      if (this.sleeping && this.sleepEnd && now >= this.sleepEnd) {
+        this.wakeUp(false, 'toki')
+      }
+
+      if (!this.isVisitorSleeping) return
+      const visitorSleepEnd = this.activeVisitor === 'ichiro'
+        ? this.sleepEndIchiro
+        : this.charactersState[this.activeVisitor]?.sleepEnd
+      if (visitorSleepEnd && now >= visitorSleepEnd) {
+        this._wakeActiveVisitor(false)
       }
     },
 
