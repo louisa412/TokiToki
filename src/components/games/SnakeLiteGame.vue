@@ -6,10 +6,10 @@
       <div v-for="cell in cells" :key="cell" class="snake-cell" :class="{ snake: snake.includes(cell), food: food === cell }">{{ food === cell ? '●' : snake.includes(cell) ? '■' : '' }}</div>
     </div>
     <div class="snake-dpad">
-      <button class="snake-dpad-btn" @click="setDir(-size)">↑</button>
-      <button class="snake-dpad-btn" @click="setDir(-1)">←</button>
-      <button class="snake-dpad-btn" @click="setDir(1)">→</button>
-      <button class="snake-dpad-btn" @click="setDir(size)">↓</button>
+      <button type="button" class="snake-dpad-btn snake-dpad-up" aria-label="向上" @click="setDir(-size)">↑</button>
+      <button type="button" class="snake-dpad-btn snake-dpad-left" aria-label="向左" @click="setDir(-1)">←</button>
+      <button type="button" class="snake-dpad-btn snake-dpad-down" aria-label="向下" @click="setDir(size)">↓</button>
+      <button type="button" class="snake-dpad-btn snake-dpad-right" aria-label="向右" @click="setDir(1)">→</button>
     </div>
   </div>
 </template>

@@ -478,7 +478,14 @@ body::before {
 }
 .snake-cell.snake { color:var(--grn); border-color:var(--grn); }
 .snake-cell.food { color:var(--red); border-color:var(--red); }
-.snake-dpad { display:grid; grid-template-columns:repeat(4,56px); gap:8px; justify-content:center; margin-top:14px; }
+.snake-dpad {
+  display:grid; grid-template-columns:repeat(3,56px); grid-template-areas:". up ." "left down right";
+  gap:8px; justify-content:center; margin-top:14px;
+}
+.snake-dpad-up { grid-area:up; }
+.snake-dpad-left { grid-area:left; }
+.snake-dpad-down { grid-area:down; }
+.snake-dpad-right { grid-area:right; }
 .snake-dpad-btn { width:56px; height:56px; font-size:22px; border:1px solid var(--bd); background:var(--s2); color:var(--txt); border-radius:8px; }
 .player-dot, .bullet-dot {
   position:absolute; transform:translate(-50%,-50%); width:24px; height:24px;
