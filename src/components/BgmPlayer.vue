@@ -29,6 +29,12 @@ const bgmSrc = `${import.meta.env.BASE_URL}audio/bgm.m4a`
 const audioRef = ref(null)
 const enabled = ref(localStorage.getItem(STORAGE_KEY) !== 'off')
 const audioReady = ref(true)
+let nativeStartTimer = null
+
+function nativeAudioBridge() {
+  if (window.Capacitor?.getPlatform?.() !== 'ios') return null
+  return window.webkit?.messageHandlers?.audioSession ?? null
+}
 
 const buttonTitle = computed(() => {
   if (!audioReady.value) return '請放入 public/audio/bgm.m4a'
@@ -36,8 +42,19 @@ const buttonTitle = computed(() => {
 })
 
 async function playMusic() {
+  if (!enabled.value) return
+
+  const bridge = nativeAudioBridge()
+  if (bridge) {
+    bridge.postMessage('play')
+    return
+  }
+
+  // Never fall back to WebKit audio on iOS because it can ignore the silent switch.
+  if (window.Capacitor?.getPlatform?.() === 'ios') return
+
   const audio = audioRef.value
-  if (!audio || !enabled.value) return
+  if (!audio) return
   audio.volume = 0.42
   try {
     await audio.play()
@@ -47,6 +64,11 @@ async function playMusic() {
 }
 
 function stopMusic() {
+  const bridge = nativeAudioBridge()
+  if (bridge) {
+    bridge.postMessage('stop')
+    return
+  }
   audioRef.value?.pause()
 }
 
@@ -65,9 +87,11 @@ onMounted(() => {
   window.addEventListener('pointerdown', unlockAudio, { passive: true })
   window.addEventListener('keydown', unlockAudio)
   playMusic()
+  nativeStartTimer = setTimeout(playMusic, 2000)
 })
 
 onBeforeUnmount(() => {
+  clearTimeout(nativeStartTimer)
   window.removeEventListener('pointerdown', unlockAudio)
   window.removeEventListener('keydown', unlockAudio)
 })
