@@ -46,8 +46,8 @@ function finish() {
   store.endGame(
     score.value >= 18 ? 'energetic' : 'happy',
     [score.value >= 18
-      ? gameLine(store, '連擊不錯。', 'Ichiro：連擊很漂亮。')
-      : gameLine(store, '泡泡而已，也能玩這麼認真。', 'Ichiro：泡泡聲很舒服。')],
+      ? gameLine(store, '連擊不錯。', '{target}：連擊很漂亮。')
+      : gameLine(store, '泡泡而已，也能玩這麼認真。', '{target}：泡泡聲很舒服。')],
     score.value >= 18 ? 22 : 12,
     -18,
     score.value >= 18 ? 10 : 5

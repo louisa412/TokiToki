@@ -38,7 +38,28 @@
     <GameModal />
 
     <!-- 角色選擇 -->
-    <CharacterSelect v-model="showCharSelect" />
+    <CharacterSelect v-model="showCharSelect" :required="store.departurePending" />
+
+    <!-- 十四天告別 -->
+    <Teleport to="body">
+      <div v-if="store.departurePending && !showCharSelect" class="farewell-overlay">
+        <div class="farewell-box">
+          <div class="farewell-title">十四天的相遇</div>
+          <img
+            class="farewell-avatar"
+            :src="`${base}images/${store.selectedCharacter}/heart.png`"
+            :alt="store.tokiName"
+          />
+          <div class="farewell-name">{{ store.tokiName }}</div>
+          <div class="farewell-text">{{ store.farewellText }}</div>
+          <div class="farewell-memory-note">已收進相遇記憶</div>
+          <div class="farewell-actions">
+            <button class="farewell-btn farewell-btn--ghost" @click="showMemories = true">查看記憶</button>
+            <button class="farewell-btn" @click="showCharSelect = true">重新選娃</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- 相遇記憶 -->
     <MemoryGallery v-model="showMemories" />
@@ -73,6 +94,7 @@ import MemoryGallery   from './components/MemoryGallery.vue'
 const store = usePetStore()
 const showCharSelect = ref(false)
 const showMemories   = ref(false)
+const base = import.meta.env.BASE_URL
 
 // ── Clock ─────────────────────────────────────────────────────────────────
 const clock = ref('──:──:──')
@@ -132,12 +154,12 @@ onMounted(() => {
   }
 
   store.idleUpdate()
+  if (store.checkDeparture()) showCharSelect.value = false
   updateClock()
 
   // 8s decay tick
   tickerId = setInterval(() => {
-    store.tick()
-    store.tickSleep()
+    if (!store.tick()) store.tickSleep()
   }, 8000)
 
   // 1s clock + sleep countdown
@@ -163,6 +185,7 @@ onMounted(() => {
     } else {
       store.cancelBackgroundNotifications()     // 回前景：取消排程，JS 自己接手
       store.wakeExpiredSleepers()
+      store.checkDeparture()
     }
   })
 })

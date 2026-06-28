@@ -25,8 +25,8 @@ function pick(i) {
   picked.value = i
   const good = shots[i].good
   msg.value = good
-    ? gameLine(store, 'Toki：...這張不錯。', 'Ichiro：光線很溫柔，拍得很好。')
-    : gameLine(store, 'Toki：焦點跑掉了。', 'Ichiro：焦點有點跑掉了，但氣氛很好。')
+    ? gameLine(store, '{target}：...這張不錯。', '{target}：光線很溫柔，拍得很好。')
+    : gameLine(store, '{target}：焦點跑掉了。', '{target}：焦點有點跑掉了，但氣氛很好。')
   store.endGame(good ? 'praised' : 'happy', [msg.value], good ? 20 : 10, -5, good ? 10 : 5)
 }
 </script>

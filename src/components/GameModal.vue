@@ -18,6 +18,7 @@
 import { computed, defineAsyncComponent } from 'vue'
 import { usePetStore } from '../stores/pet'
 import { GAMES } from '../stores/pet'
+import { gameTargetName } from './games/gameTarget'
 
 const store = usePetStore()
 
@@ -48,7 +49,7 @@ const currentGame = computed(() =>
 
 const gameTitle = computed(() => {
   const g = GAMES.find(g => g.id === store.activeGameId)
-  const target = store.activeGameTarget === 'ichiro' ? 'Ichiro' : store.tokiName
+  const target = gameTargetName(store)
   return g ? `${g.ico} ${target}：${g.name}` : ''
 })
 

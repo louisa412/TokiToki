@@ -12,10 +12,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { usePetStore } from '../../stores/pet'
-import { gameLine, isIchiroGame } from './gameTarget'
+import { gameLine, gameTargetInitial } from './gameTarget'
 
 const store = usePetStore()
-const playerMark = isIchiroGame(store) ? 'I' : 'T'
+const playerMark = gameTargetInitial(store)
 const player = ref({ x: 50, y: 82 })
 const bullets = ref([])
 const timeLeft = ref(12)
@@ -50,8 +50,8 @@ function finish(win) {
   store.endGame(
     win ? 'energetic' : 'helpless',
     [win
-      ? gameLine(store, '躲得很乾淨。Toki：...不錯。', '躲得很乾淨。Ichiro：剛剛很集中。')
-      : gameLine(store, '中彈了。Toki：看清楚再動。', '中彈了。Ichiro：還好只是遊戲。')],
+      ? gameLine(store, '躲得很乾淨。{target}：...不錯。', '躲得很乾淨。{target}：剛剛很集中。')
+      : gameLine(store, '中彈了。{target}：看清楚再動。', '中彈了。{target}：還好只是遊戲。')],
     win ? 24 : 8,
     -18,
     win ? 12 : 3

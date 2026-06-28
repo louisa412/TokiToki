@@ -3,8 +3,8 @@
     <div class="char-select-overlay" :class="{ open: modelValue }" @click.self="close">
       <div class="char-select-box">
         <div class="char-select-hdr">
-          <span class="modal-title">選擇角色</span>
-          <button class="modal-close" @click="close">✕</button>
+          <span class="modal-title">{{ required ? '重新選娃' : '選擇角色' }}</span>
+          <button v-if="!required" class="modal-close" @click="close">✕</button>
         </div>
 
         <div class="char-grid">
@@ -42,7 +42,9 @@
           </div>
         </div>
 
-        <div class="char-select-note">切換角色不影響目前的數值</div>
+        <div class="char-select-note">
+          {{ required ? '選定後會開始新的十四天' : '切換角色不影響目前的數值' }}
+        </div>
       </div>
     </div>
   </Teleport>
@@ -55,13 +57,21 @@ import { CHARACTERS, LOCKED_SLOTS } from '../data/characters'
 const store = usePetStore()
 const base  = import.meta.env.BASE_URL
 
-defineProps({ modelValue: Boolean })
+const props = defineProps({
+  modelValue: Boolean,
+  required: { type: Boolean, default: false }
+})
 const emit = defineEmits(['update:modelValue'])
 
-function close() { emit('update:modelValue', false) }
+function close() {
+  if (props.required) return
+  emit('update:modelValue', false)
+}
 
 function select(char) {
-  store.setCharacter(char.id)
+  if (props.required) store.startNewAdoption(char.id)
+  else store.setCharacter(char.id)
   close()
+  if (props.required) emit('update:modelValue', false)
 }
 </script>

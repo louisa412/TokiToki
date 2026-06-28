@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { getCharacterName, CHARACTERS, CHARACTER_MAP } from '../data/characters'
 import { CHARACTER_DIALOGUE, DEFAULT_VISITOR_DIALOGUE } from '../data/dialogue'
-import { unlockMemory, ensureMemoryFields } from '../systems/memorySystem'
+import { unlockMemory, ensureMemoryFields, getMemoryDefinition } from '../systems/memorySystem'
 import { HIGH_AFFINITY_THRESHOLD } from '../data/memories'
 
 function pairKey(a, b) { return [a, b].sort().join('-') }
@@ -175,6 +175,8 @@ export const TITLES = [
 export const NAP_MS = 10 * 60 * 1000
 export const BED_MS = 8  * 60 * 60 * 1000
 export const SICK_DISPLAY_MS = 8 * 60 * 60 * 1000
+export const ADOPTION_DAYS = 14
+export const ADOPTION_MS = ADOPTION_DAYS * 24 * 3600 * 1000
 
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -233,9 +235,11 @@ export const usePetStore = defineStore('pet', {
     lastMsg: '橫濱，本大爺回來了。',
     nightMode: false,
     selectedCharacter: 'toki',
+    departurePending: false,
 
     // Per-character independent save states
     charactersState: { toki: createDefaultCharacterState() },
+    memoryArchive: [],
 
     // Interaction state
     reacting: false,
@@ -259,6 +263,7 @@ export const usePetStore = defineStore('pet', {
     sleepStartIchiro: null,
     _sleepNowIchiro: 0,
     _sleepNowVisitor: 0,
+    sleepIntroUntil: 0,
 
     // Sickness
     sick: false,
@@ -388,13 +393,19 @@ export const usePetStore = defineStore('pet', {
       return Math.floor((Date.now() - state.adoptedAt) / (24 * 3600 * 1000))
     },
     daysLeft: (state) => {
-      if (!state.adoptedAt) return 14
+      if (!state.adoptedAt) return ADOPTION_DAYS
       const days = Math.floor((Date.now() - state.adoptedAt) / (24 * 3600 * 1000))
-      return Math.max(0, 14 - days)
+      return Math.max(0, ADOPTION_DAYS - days)
     },
     isLeaving: (state) => {
       if (!state.adoptedAt) return false
-      return Math.floor((Date.now() - state.adoptedAt) / (24 * 3600 * 1000)) >= 14
+      return Date.now() - state.adoptedAt >= ADOPTION_MS
+    },
+    farewellText: (state) => {
+      const def = getMemoryDefinition('departure')
+      return def.textTemplates?.[state.selectedCharacter]
+        || def.fallbackText
+        || '十四天的相遇結束了。這段時間，會變成你們共同的回憶。'
     }
   },
 
@@ -406,6 +417,7 @@ export const usePetStore = defineStore('pet', {
         this._syncTokiAffinity()
         this._updateSpecialSpriteTimers()
         this._flushToCharactersState(this.selectedCharacter)
+        this._archiveAllMemories()
         localStorage.setItem('toki_v5', JSON.stringify({
           sat: this.sat, hlt: this.hlt, moo: this.moo, aff: this.aff,
           playerAffinityToki: this.playerAffinityToki,
@@ -434,7 +446,9 @@ export const usePetStore = defineStore('pet', {
           inventory:       this.inventory,
           locationMemory:  this.locationMemory,
           selectedCharacter: this.selectedCharacter,
+          departurePending: this.departurePending,
           charactersState:   this.charactersState,
+          memoryArchive:     this.memoryArchive,
           savedAt: nowMs()
         }))
         this.scheduleBackgroundNotifications()
@@ -459,6 +473,7 @@ export const usePetStore = defineStore('pet', {
         const d       = JSON.parse(raw)
         const elapsed = (nowMs() - d.savedAt) / 1000
         const t       = Math.min(elapsed, 21600)
+        this.memoryArchive = Array.isArray(d.memoryArchive) ? d.memoryArchive : []
 
         // ── Ichiro / 訪客系統（永遠從頂層欄位讀取）──────────────────────
         this.playerAffinityIchiro = clamp(d.playerAffinityIchiro ?? 0, 0, 300)
@@ -596,6 +611,10 @@ export const usePetStore = defineStore('pet', {
           this._loadFromCharactersState(this.selectedCharacter)
         }
 
+        this.departurePending = d.departurePending ?? this.isLeaving
+        this._archiveAllMemories()
+        if (this.departurePending) this._enterDeparture(false)
+
         // ── 睡眠結束偵測 ──────────────────────────────────────────────
         if (this.sleeping && this.sleepEnd) {
           this._sleepNow = nowMs()
@@ -612,6 +631,8 @@ export const usePetStore = defineStore('pet', {
     // ── Decay (每 8 秒) ───────────────────────────────────────────────────
 
     tick() {
+      if (this.checkDeparture()) return
+
       const r       = this.nightMode ? 2 : 1
       const mooMult = this.hlt < 30 ? 1.5 : 1   // 健康差 → 心情衰減加快
 
@@ -728,6 +749,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     setCharacter(id) {
+      if (this.departurePending) return this.startNewAdoption(id)
       if (id === this.selectedCharacter) return
       this._flushToCharactersState(this.selectedCharacter)
       if (!this.charactersState[id]) {
@@ -744,6 +766,100 @@ export const usePetStore = defineStore('pet', {
       this.currentSprite = 'energetic'
       this.idleUpdate()
       this.save()
+    },
+
+    checkDeparture() {
+      if (this.departurePending) return true
+      if (!this.isLeaving) return false
+      this._enterDeparture(true)
+      return true
+    },
+
+    _enterDeparture(shouldSave = true) {
+      this.departurePending = true
+      unlockMemory(this, 'departure')
+      this._archiveCharacterMemories(this.selectedCharacter)
+      clearTimeout(this.reactionTimer)
+      this.reacting = false
+      this.inGame = false
+      this.activeGameId = null
+      this.activeGameTarget = 'toki'
+      this.sleeping = null
+      this.sleepEnd = null
+      this.sleepStart = null
+      this.sleepingIchiro = null
+      this.sleepEndIchiro = null
+      this.sleepStartIchiro = null
+      if (this.activeVisitor && this.activeVisitor !== 'ichiro') {
+        const cs = this.charactersState[this.activeVisitor]
+        if (cs) { cs.sleeping = null; cs.sleepEnd = null; cs.sleepStart = null }
+      }
+      this.activeVisitor = null
+      this.pairEffect = null
+      this.currentSprite = 'heart'
+      this.lastMsg = this.farewellText
+      this._flushToCharactersState(this.selectedCharacter)
+      if (shouldSave) this.save()
+    },
+
+    startNewAdoption(id) {
+      const nextId = CHARACTERS.some(c => c.id === id) ? id : 'toki'
+      if (this.charactersState[this.selectedCharacter]) {
+        this.charactersState[this.selectedCharacter].departedAt = nowMs()
+        this._archiveCharacterMemories(this.selectedCharacter)
+      }
+      const old = this.charactersState[nextId]
+      const fresh = createDefaultCharacterState()
+      fresh.adoptedAt = nowMs()
+      fresh.memories = Array.isArray(old?.memories) ? old.memories : []
+      fresh.milestones = old?.milestones && typeof old.milestones === 'object' ? old.milestones : {}
+      this.charactersState[nextId] = fresh
+      this.selectedCharacter = nextId
+      this.departurePending = false
+      this.activeVisitor = null
+      this.pairEffect = null
+      this.visitorSprite = 'happy'
+      this.reacting = false
+      this.inGame = false
+      this.activeGameId = null
+      this.activeGameTarget = 'toki'
+      this._loadFromCharactersState(nextId)
+      this.currentSprite = 'energetic'
+      this.setMsg(`${this.tokiName} 來到了你的房間。新的十四天開始了。`)
+      this.save()
+      return true
+    },
+
+    _memoryArchiveKey(record) {
+      if (!record) return ''
+      return [
+        record.characterId || '',
+        record.id || '',
+        record.acquiredAt || '',
+        record.day || ''
+      ].join(':')
+    },
+
+    _archiveCharacterMemories(characterId) {
+      const cs = this.charactersState?.[characterId]
+      if (!characterId || !cs) return
+      ensureMemoryFields(cs)
+      if (!Array.isArray(this.memoryArchive)) this.memoryArchive = []
+      const seen = new Set(this.memoryArchive.map(rec => this._memoryArchiveKey(rec)))
+      for (const memory of cs.memories || []) {
+        const record = { ...memory, characterId: memory.characterId || characterId }
+        const key = this._memoryArchiveKey(record)
+        if (!seen.has(key)) {
+          this.memoryArchive.push(record)
+          seen.add(key)
+        }
+      }
+    },
+
+    _archiveAllMemories() {
+      for (const characterId of Object.keys(this.charactersState || {})) {
+        this._archiveCharacterMemories(characterId)
+      }
     },
 
     // Copies current flat fields → charactersState[id]
@@ -881,6 +997,11 @@ export const usePetStore = defineStore('pet', {
     },
 
     idleUpdate() {
+      if (this.departurePending) {
+        this.setSprite('heart')
+        this.setMsg(this.farewellText)
+        return
+      }
       if (this.reacting || this.inGame || this.sleeping) return
       // sick 圖只在健康低於 30 且持續 8 小時後顯示。
       const dlg = this._dlg()
@@ -948,6 +1069,7 @@ export const usePetStore = defineStore('pet', {
     // ── React ─────────────────────────────────────────────────────────────
 
     react(sprite, msgs, dur = 2200) {
+      if (this.departurePending) return
       if (this.reacting) return
       this.reacting = true
       clearTimeout(this.reactionTimer)
@@ -960,6 +1082,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     reactPair(sprite, visitorSprite, effect, msgs, dur = 2400) {
+      if (this.departurePending) return
       if (this.reacting) return
       this.reacting = true
       this.pairEffect = effect
@@ -992,6 +1115,7 @@ export const usePetStore = defineStore('pet', {
     // ── Actions ───────────────────────────────────────────────────────────
 
     doAction(type, target = 'toki') {
+      if (this.departurePending) return 'departed'
       if (this.reacting) return
       if (this._isTargetSleeping(target)) return 'sleeping'
       if (this._needsVisitor(target)) return 'need_visitor'
@@ -1076,6 +1200,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     doIchiroAction(type) {
+      if (this.departurePending) return 'departed'
       if (this.reacting) return
       if (!this.hasActiveVisitor) return 'need_visitor'
       const vid = this.activeVisitor
@@ -1116,6 +1241,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     unlockVisitor(id = 'ichiro') {
+      if (this.departurePending) return false
       this.visitorUnlocked = true
       this.activeVisitor = id
       this.visitorSprite = 'happy'
@@ -1124,6 +1250,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     callVisitor(id = 'ichiro') {
+      if (this.departurePending) return false
       if (this.reacting) return
       this.visitorUnlocked = true
       this.activeVisitor = id
@@ -1138,6 +1265,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     sendVisitorHome() {
+      if (this.departurePending) return false
       if (!this.hasActiveVisitor) return false
       // capture dialogue while activeVisitor is still set so {visitor} placeholder resolves
       this.react('energetic', this._vt('departure'), 2200)
@@ -1157,6 +1285,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     doDuoAction(id) {
+      if (this.departurePending) return 'departed'
       if (this.reacting) return
       if (this._isTargetSleeping('duo')) return 'sleeping'
       if (!this.hasActiveVisitor) return 'need_visitor'
@@ -1179,6 +1308,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     doDuoCareAction(id) {
+      if (this.departurePending) return 'departed'
       if (this.reacting) return
       if (this._isTargetSleeping('duo')) return 'sleeping'
       if (!this.hasActiveVisitor) return 'need_visitor'
@@ -1213,6 +1343,7 @@ export const usePetStore = defineStore('pet', {
     // ── Food ──────────────────────────────────────────────────────────────
 
     doFood(id, target = 'toki') {
+      if (this.departurePending) return 'departed'
       if (this.reacting) return
       if (this._isTargetSleeping(target)) return 'sleeping'
       if (this._needsVisitor(target)) return 'need_visitor'
@@ -1275,6 +1406,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     doIchiroFood(id) {
+      if (this.departurePending) return 'departed'
       if (this.reacting) return
       if (!this.hasActiveVisitor) return 'need_visitor'
       const vid = this.activeVisitor
@@ -1324,6 +1456,7 @@ export const usePetStore = defineStore('pet', {
     // ── Care ──────────────────────────────────────────────────────────────
 
     doCare(id, target = 'toki') {
+      if (this.departurePending) return 'departed'
       if (this.reacting) return
       if (this._isTargetSleeping(target)) return 'sleeping'
       if (this._needsVisitor(target)) return 'need_visitor'
@@ -1373,6 +1506,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     doIchiroCare(id) {
+      if (this.departurePending) return 'departed'
       if (this.reacting) return
       if (!this.hasActiveVisitor) return 'need_visitor'
       const vid = this.activeVisitor
@@ -1424,6 +1558,7 @@ export const usePetStore = defineStore('pet', {
     // ── Walk inventory ────────────────────────────────────────────────────
 
     addToInventory(item) {
+      if (this.departurePending) return
       this.inventory.push(item)
       this.save()
     },
@@ -1431,6 +1566,7 @@ export const usePetStore = defineStore('pet', {
     // ── Game ──────────────────────────────────────────────────────────────
 
     openGame(id, target = 'toki') {
+      if (this.departurePending) return 'departed'
       if (this.reacting) return false
       if (this._isTargetSleeping(target)) return 'sleeping'
       if (this._needsVisitor(target)) return 'need_visitor'
@@ -1489,6 +1625,7 @@ export const usePetStore = defineStore('pet', {
     // ── Checkup ───────────────────────────────────────────────────────────
 
     openCheckup() {
+      if (this.departurePending) return 'departed'
       if (this.checkupDone)             return 'used'
       if (this.reacting || this.sleeping) return
       if (this.isDisturbed)             return 'disturbed'
@@ -1558,6 +1695,7 @@ export const usePetStore = defineStore('pet', {
     // ── Sleep ──────────────────────────────────────────────────────────────
 
     doSleep(type, target = 'toki') {
+      if (this.departurePending) return 'departed'
       if (this.reacting) return
       const endAt = nowMs() + (type === 'nap' ? NAP_MS : BED_MS)
 
@@ -1581,6 +1719,7 @@ export const usePetStore = defineStore('pet', {
         this.visitorSprite = 'sleeping'
         const vslp = this._visitorDlg().sleep || DEFAULT_VISITOR_DIALOGUE.sleep
         this.setMsg(type === 'nap' ? (vslp.napStart || DEFAULT_VISITOR_DIALOGUE.sleep.napStart) : (vslp.bedStart || DEFAULT_VISITOR_DIALOGUE.sleep.bedStart))
+        this.sleepIntroUntil = nowMs() + 5000
         this.save()
         return true
       }
@@ -1593,11 +1732,13 @@ export const usePetStore = defineStore('pet', {
       this.setSprite('sleeping')
       const sd = this._dlg().sleep || CHARACTER_DIALOGUE.toki.sleep
       this.setMsg(type === 'nap' ? (sd.napStart || CHARACTER_DIALOGUE.toki.sleep.napStart) : (sd.bedStart || CHARACTER_DIALOGUE.toki.sleep.bedStart))
+      this.sleepIntroUntil = nowMs() + 5000
       this.save()
       return true
     },
 
     wakeUp(forced = false, target = 'toki') {
+      if (this.departurePending) return
       if (target !== 'toki') {
         return this._wakeActiveVisitor(forced)
       }
@@ -1735,6 +1876,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     tickSleep() {
+      if (this.departurePending) return
       const visitorSleeping = this.isVisitorSleeping
       const hadSleep = this.sleeping || visitorSleeping
       if (!hadSleep) return
@@ -1742,7 +1884,7 @@ export const usePetStore = defineStore('pet', {
       if (this.sleeping) {
         this._sleepNow = nowMs()
         const rem = this.sleepRemaining
-        if (!this.reacting) {
+        if (!this.reacting && nowMs() >= this.sleepIntroUntil) {
           this.setMsg(this.sleeping === 'nap'
             ? `${this.tokiName}：...zz  剩 ${_fmtTime(rem)}`
             : `${this.tokiName}：...zzz  剩 ${_fmtTime(rem)}`)
@@ -1752,11 +1894,11 @@ export const usePetStore = defineStore('pet', {
 
       if (visitorSleeping) {
         const vid = this.activeVisitor
-        const visName = vid === 'ichiro' ? 'Ichiro' : getCharacterName(vid)
+        const visName = this.activeVisitorName || getCharacterName(vid)
         if (vid === 'ichiro') {
           this._sleepNowIchiro = nowMs()
           const rem = this.sleepRemainingIchiro
-          if (!this.reacting && !this.sleeping) {
+          if (!this.reacting && !this.sleeping && nowMs() >= this.sleepIntroUntil) {
             this.setMsg(this.sleepingIchiro === 'nap'
               ? `${visName}：...zz  剩 ${_fmtTime(rem)}`
               : `${visName}：...zzz  剩 ${_fmtTime(rem)}`)
@@ -1765,7 +1907,7 @@ export const usePetStore = defineStore('pet', {
         } else {
           this._sleepNowVisitor = nowMs()
           const rem = this.sleepRemainingVisitor
-          if (!this.reacting && !this.sleeping) {
+          if (!this.reacting && !this.sleeping && nowMs() >= this.sleepIntroUntil) {
             const cs = this.charactersState[vid]
             this.setMsg(cs?.sleeping === 'nap'
               ? `${visName}：...zz  剩 ${_fmtTime(rem)}`
@@ -1777,6 +1919,7 @@ export const usePetStore = defineStore('pet', {
     },
 
     wakeExpiredSleepers() {
+      if (this.departurePending) return
       const now = nowMs()
       if (this.sleeping && this.sleepEnd && now >= this.sleepEnd) {
         this.wakeUp(false, 'toki')
@@ -1794,6 +1937,7 @@ export const usePetStore = defineStore('pet', {
     // ── Notifications ─────────────────────────────────────────────────────
 
     checkNotifications() {
+      if (this.departurePending) return
       if (!this.sleeping) {
         const s = Math.round(this.sat)
         const h = Math.round(this.hlt)
@@ -1839,6 +1983,10 @@ export const usePetStore = defineStore('pet', {
     },
 
     scheduleBackgroundNotifications() {
+      if (this.departurePending) {
+        this.cancelBackgroundNotifications()
+        return
+      }
       const nightMult = this.nightMode ? 2 : 1
       const DECAY = {
         tokiSat: 1.0 / 64,

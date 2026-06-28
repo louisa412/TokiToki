@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="rap-line">Toki：「{{ current.line }}」</div>
+    <div class="rap-line">{{ targetName }}：「{{ current.line }}」</div>
     <div class="rap-round">第{{ roundIdx + 1 }}/{{ rounds.length }}句</div>
     <div style="display:flex;flex-direction:column;gap:6px">
       <button
@@ -20,8 +20,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { usePetStore } from '../../stores/pet'
+import { gameTargetName } from './gameTarget'
 
 const store = usePetStore()
+const targetName = gameTargetName(store)
 
 const rounds = [
   { line: '橫濱的夜，影子拖得老長',     choices: ['月亮也沉默，看著我走', '花園裡蝴蝶在飛舞', '回家吃飯啦'],     correct: 0 },

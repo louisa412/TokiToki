@@ -18,14 +18,14 @@
         v-for="g in DUO_GAME_ACTIONS"
         :key="g.id"
         class="game-btn"
-        :class="{ locked: store.relationshipTokiIchiro < g.minRel || !store.hasActiveVisitor }"
+        :class="{ locked: store.currentRelationship < g.minRel || !store.hasActiveVisitor }"
         :disabled="isActionDisabled"
         @click="handleDuo(g)"
       >
         <span class="gi">{{ g.ico }}</span>
         <span class="gn">{{ g.name }}</span>
         <span v-if="!store.hasActiveVisitor" class="lock-hint">來訪限定</span>
-        <span v-else-if="store.relationshipTokiIchiro < g.minRel" class="lock-hint">關係 {{ g.minRel }}+</span>
+        <span v-else-if="store.currentRelationship < g.minRel" class="lock-hint">關係 {{ g.minRel }}+</span>
       </button>
     </div>
   </div>

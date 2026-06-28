@@ -57,7 +57,7 @@ import {
   petitionWalk,
   isNightTime
 } from '../../systems/walkSystem'
-import { gameTargetName, isIchiroGame } from './gameTarget'
+import { formatGameText, gameTargetName, isIchiroGame } from './gameTarget'
 
 const store = usePetStore()
 const ichiroMode = isIchiroGame(store)
@@ -178,7 +178,7 @@ function executeIchiroWalk(loc) {
   const mood = (loc.rewards?.mood || 8) + (event?.mood || 0)
   const affection = (loc.rewards?.affection || 5) + (event?.affection || 0)
   return {
-    dialogue: pickIchiroDialogue(loc, event),
+    dialogue: formatGameText(store, pickIchiroDialogue(loc, event)),
     event,
     rewards: { mood, affection }
   }
@@ -199,27 +199,32 @@ function pickIchiroDialogue(loc, event) {
   const night = isNightTime()
   const lines = loved
     ? [
-        `Ichiro：${loc.name}很舒服。謝謝你帶我來。`,
-        `Ichiro：這裡的氣氛很好，我想多看一下。`,
-        night ? `Ichiro：晚上的${loc.name}很安靜。` : `Ichiro：白天來這裡也很好。`
+        `{target}：${loc.name}很舒服。謝謝你帶我來。`,
+        `{target}：這裡的氣氛很好，我想多看一下。`,
+        night ? `{target}：晚上的${loc.name}很安靜。` : `{target}：白天來這裡也很好。`
       ]
     : [
-        `Ichiro：${loc.name}啊。慢慢走吧。`,
-        `Ichiro：能一起出來，我很開心。`,
-        night ? 'Ichiro：夜風有點涼，但很舒服。' : 'Ichiro：今天的光線很好。'
+        `{target}：${loc.name}啊。慢慢走吧。`,
+        `{target}：能一起出來，我很開心。`,
+        night ? '{target}：夜風有點涼，但很舒服。' : '{target}：今天的光線很好。'
       ]
   return lines[Math.floor(Math.random() * lines.length)]
 }
 
 function pickIchiroEvent(loc) {
   const events = [
-    { text: 'Ichiro 在路邊停下來看街燈。', dialogue: 'Ichiro：這裡的光很漂亮。', mood: 8, affection: 4 },
-    { text: '你們找到一張空長椅坐了一下。', dialogue: 'Ichiro：休息一下也很好。', mood: 6, affection: 3 },
-    { text: '路上有點擁擠，Ichiro 放慢腳步。', dialogue: 'Ichiro：人有點多，我們走旁邊吧。', mood: -3, affection: 2 }
+    { text: '{target} 在路邊停下來看街燈。', dialogue: '{target}：這裡的光很漂亮。', mood: 8, affection: 4 },
+    { text: '你們找到一張空長椅坐了一下。', dialogue: '{target}：休息一下也很好。', mood: 6, affection: 3 },
+    { text: '路上有點擁擠，{target} 放慢腳步。', dialogue: '{target}：人有點多，我們走旁邊吧。', mood: -3, affection: 2 }
   ]
   if (loc.category === 'sea' || loc.category === 'park') {
-    events.push({ text: '風吹過來，Ichiro 看起來很放鬆。', dialogue: 'Ichiro：這裡很適合散步。', mood: 10, affection: 5 })
+    events.push({ text: '風吹過來，{target} 看起來很放鬆。', dialogue: '{target}：這裡很適合散步。', mood: 10, affection: 5 })
   }
-  return events[Math.floor(Math.random() * events.length)]
+  const event = events[Math.floor(Math.random() * events.length)]
+  return {
+    ...event,
+    text: formatGameText(store, event.text),
+    dialogue: formatGameText(store, event.dialogue)
+  }
 }
 </script>

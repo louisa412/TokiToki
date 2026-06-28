@@ -33,9 +33,9 @@ function play(choice) {
     (choice === 'scissors' && opponent === 'paper') ||
     (choice === 'paper'    && opponent === 'rock')
   ) {
-    cls = 'rw'; txt = gameLine(store, '你贏了。手氣好而已。', '你贏了。Ichiro：反應很快。'); dm = 8; da = 5
+    cls = 'rw'; txt = gameLine(store, '你贏了。手氣好而已。', '你贏了。{target}：反應很快。'); dm = 8; da = 5
   } else {
-    cls = 'rl'; txt = gameLine(store, '輸了？哈。果然。', 'Ichiro 贏了。Ichiro：剛好猜對了。'); dm = 12; da = 5
+    cls = 'rl'; txt = gameLine(store, '輸了？哈。果然。', '{target} 贏了。{target}：剛好猜對了。'); dm = 12; da = 5
   }
 
   result.value = { cls, html: `${gameTargetName(store)}出了 ${NM[opponent]}<br><span class="${cls}">${txt}</span>` }
@@ -44,7 +44,7 @@ function play(choice) {
     gameMsgs(
       store,
       cls === 'rl' ? ['哈。輸了吧。', '就這樣。'] : ['...只是手滑。', '下次不會輸的。'],
-      cls === 'rl' ? ['Ichiro：我贏了。', '下次再一起玩吧。'] : ['Ichiro：你很會猜。', '這局很好玩。']
+      cls === 'rl' ? ['{target}：我贏了。', '下次再一起玩吧。'] : ['{target}：你很會猜。', '這局很好玩。']
     ),
     dm, -5, da
   )

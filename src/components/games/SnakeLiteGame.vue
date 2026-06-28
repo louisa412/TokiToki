@@ -62,8 +62,8 @@ function step() {
     store.endGame(
       score.value >= 4 ? 'energetic' : 'sad',
       [score.value >= 4
-        ? gameLine(store, '活得夠久。', 'Ichiro：撐得很久，很厲害。')
-        : gameLine(store, '撞牆了。Toki：看路。', '撞牆了。Ichiro：下次慢慢來。')],
+        ? gameLine(store, '活得夠久。', '{target}：撐得很久，很厲害。')
+        : gameLine(store, '撞牆了。{target}：看路。', '撞牆了。{target}：下次慢慢來。')],
       score.value >= 4 ? 20 : 8,
       -18,
       score.value >= 4 ? 9 : 3

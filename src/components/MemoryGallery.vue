@@ -7,12 +7,12 @@
           <button class="modal-close" @click="close">✕</button>
         </div>
 
-        <div class="mg-sub">{{ characterName }} 的記憶 · {{ memories.length }} 段</div>
+        <div class="mg-sub">所有相遇記憶 · {{ memories.length }} 段</div>
 
         <div v-if="memories.length" class="mg-list">
           <MemoryCard
             v-for="m in memories"
-            :key="m.id"
+            :key="`${m.characterId}-${m.id}-${m.acquiredAt || m.day}`"
             :character-id="m.characterId"
             :memory-id="m.id"
             :title="m.title"
@@ -37,8 +37,7 @@
 <script setup>
 import { computed } from 'vue'
 import { usePetStore } from '../stores/pet'
-import { getCharacterName } from '../data/characters'
-import { getMemoryDisplayList } from '../systems/memorySystem'
+import { getMemoryDisplay, getMemoryDisplayList } from '../systems/memorySystem'
 
 const store = usePetStore()
 
@@ -47,11 +46,27 @@ const emit = defineEmits(['update:modelValue'])
 
 function close() { emit('update:modelValue', false) }
 
-const characterName = computed(() => getCharacterName(store.selectedCharacter))
-
 const memories = computed(() => {
-  const cs = store.charactersState[store.selectedCharacter]
-  return getMemoryDisplayList(cs, store.selectedCharacter)
+  const liveMemories = Object.entries(store.charactersState || {})
+    .flatMap(([characterId, cs]) => getMemoryDisplayList(cs, characterId))
+
+  const archivedMemories = (store.memoryArchive || [])
+    .map(record => getMemoryDisplay(record, record.characterId))
+
+  const seen = new Set()
+  return [...liveMemories, ...archivedMemories]
+    .filter(memory => {
+      const key = [
+        memory.characterId,
+        memory.id,
+        memory.acquiredAt || '',
+        memory.day || ''
+      ].join(':')
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    .sort((a, b) => (b.acquiredAt ?? 0) - (a.acquiredAt ?? 0))
 })
 </script>
 

@@ -19,10 +19,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { usePetStore } from '../../stores/pet'
-import { gameMsgs, isIchiroGame } from './gameTarget'
+import { formatGameText, gameMsgs, gameTargetName, isIchiroGame } from './gameTarget'
 
 const store = usePetStore()
 const ichiroMode = isIchiroGame(store)
+const targetName = gameTargetName(store)
 
 const questions = [
   {
@@ -50,7 +51,8 @@ const questions = [
     ok: '嗯。這個時間你應該很熟。', wrong: '深夜才不只到24點。'
   },
   {
-    question: 'Toki 最討厭什麼？',
+    id: 'personalHabit',
+    question: '{pet} 最討厭什麼？',
     options: ['被誇獎', '被無視', '被一直打擾', '草莓'],
     answer: 2,
     ok: '...你真的了解我。', wrong: '草莓我不討厭。只是沒要求。'
@@ -65,15 +67,15 @@ const comment = ref('')
 
 const q = computed(() => questions[qIdx.value])
 const displayQuestion = computed(() => {
-  if (!ichiroMode || q.value.question !== 'Toki 最討厭什麼？') return q.value.question
-  return 'Ichiro 比較擅長什麼？'
+  if (!ichiroMode || q.value.id !== 'personalHabit') return formatGameText(store, q.value.question)
+  return `${targetName} 比較擅長什麼？`
 })
 const displayOptions = computed(() => {
-  if (!ichiroMode || q.value.question !== 'Toki 最討厭什麼？') return q.value.options
+  if (!ichiroMode || q.value.id !== 'personalHabit') return q.value.options
   return ['安靜整理', '突然大吵', '亂丟東西', '惡作劇']
 })
 const answerIndex = computed(() => {
-  if (!ichiroMode || q.value.question !== 'Toki 最討厭什麼？') return q.value.answer
+  if (!ichiroMode || q.value.id !== 'personalHabit') return q.value.answer
   return 0
 })
 
@@ -90,9 +92,9 @@ function pick(i) {
   picked.value = i
   const correct = i === answerIndex.value
   if (correct) score.value++
-  comment.value = ichiroMode && q.value.question === 'Toki 最討厭什麼？'
-    ? (correct ? 'Ichiro：嗯，我比較喜歡安靜地完成事情。' : 'Ichiro：這題有點難呢。')
-    : (correct ? q.value.ok : q.value.wrong)
+  comment.value = ichiroMode && q.value.id === 'personalHabit'
+    ? (correct ? `${targetName}：嗯，我比較喜歡安靜地完成事情。` : `${targetName}：這題有點難呢。`)
+    : formatGameText(store, correct ? q.value.ok : q.value.wrong)
 
   setTimeout(() => {
     if (qIdx.value < questions.length - 1) {
@@ -114,7 +116,7 @@ function pick(i) {
           ],
           [
             perfect ? `全對。${s}/${questions.length}。很厲害。` : `${s}/${questions.length}。`,
-            perfect ? 'Ichiro：你記得好多。' : good ? 'Ichiro：答得不錯。' : 'Ichiro：下次一起再看一次。',
+            perfect ? '{target}：你記得好多。' : good ? '{target}：答得不錯。' : '{target}：下次一起再看一次。',
           ]
         ),
         perfect ? 20 : good ? 10 : 3,
